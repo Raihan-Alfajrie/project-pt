@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pertamina Admin Panel — Jadwal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#ea2027; --red-strong:#c8141b; --red-soft:rgba(234,32,39,.16);
+  --bg:#212326; --panel:#3b2226; --panel-2:#492226; --panel-3:#54282d;
+  --border:rgba(234,32,39,.28); --border-soft:rgba(255,255,255,.08);
+  --white:#ffffff; --text:#f6f5f4; --text-dim:rgba(246,245,244,.66); --text-faint:rgba(246,245,244,.4);
+  --sidebar-w:264px; --radius:14px;
+  font-family:'Inter',system-ui,sans-serif; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#eceae7; --panel:#ffffff; --panel-2:#f7f1f1; --panel-3:#f2e9e9;
+    --text:#241417; --text-dim:#5c4b4d; --text-faint:#8b7a7c; --border:rgba(234,32,39,.22); --border-soft:rgba(0,0,0,.08);
+  }
+}
+:root[data-theme="dark"]{ --bg:#212326; --panel:#3b2226; --panel-2:#492226; --text:#f6f5f4; --text-dim:rgba(246,245,244,.66); --text-faint:rgba(246,245,244,.4); }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+*{ box-sizing:border-box; }
+body{ margin:0; background:var(--bg); color:var(--text); min-height:100%; -webkit-font-smoothing:antialiased; }
+h1,h2,h3{ font-family:'Space Grotesk',sans-serif; letter-spacing:-.01em; margin:0; }
+a{ text-decoration:none; color:inherit; }
+
+/* ===== topbar + sidebar ===== */
+.shell{ min-height:100vh; }
+.topbar{ display:flex; align-items:center; background:var(--red); color:#fff; padding-top:env(safe-area-inset-top,0px); position:sticky; top:0; z-index:30; }
+.logo-block{ width:var(--sidebar-w); flex:0 0 auto; display:flex; align-items:center; gap:11px; padding:14px 18px; }
+.logo-block .mark{ width:36px; height:36px; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; }
+.logo-block .mark svg{ width:20px; height:20px; }
+.logo-block .name{ font-weight:700; font-size:15px; line-height:1.15; }
+.logo-block .sub{ font-size:11px; opacity:.85; }
+.collapse-btn{ margin-left:auto; width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.12); cursor:pointer; flex:0 0 auto; }
+.collapse-btn svg{ width:14px; height:14px; }
+.topbar-mid{ flex:1; display:flex; align-items:center; gap:12px; padding:0 20px; border-left:1px solid rgba(255,255,255,.18); min-width:0; }
+.topbar-mid .ic{ width:34px; height:34px; border-radius:9px; background:rgba(255,255,255,.14); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+.topbar-mid .ic svg{ width:17px; height:17px; }
+.topbar-mid h1{ font-size:17px; }
+.topbar-mid .desc{ font-size:11.5px; opacity:.82; margin-top:1px; }
+.topbar-right{ display:flex; align-items:center; gap:6px; padding:0 20px; flex:0 0 auto; }
+.navbtn{ display:flex; align-items:center; gap:7px; padding:9px 14px; border-radius:9px; font-size:13.5px; font-weight:600; color:#fff; cursor:pointer; white-space:nowrap; }
+.navbtn svg{ width:15px; height:15px; opacity:.92; }
+.navbtn:hover{ background:rgba(255,255,255,.12); }
+.tb-divider{ width:1px; height:24px; background:rgba(255,255,255,.28); margin:0 6px; }
+.iconbtn{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; }
+.iconbtn:hover{ background:rgba(255,255,255,.12); }
+.iconbtn svg{ width:16px; height:16px; }
+.badge-dot{ position:absolute; top:6px; right:6px; width:7px; height:7px; border-radius:50%; background:#fff; border:2px solid var(--red); }
+.clockpill{ display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; background:rgba(255,255,255,.14); padding:7px 12px; border-radius:99px; }
+.clockpill svg{ width:13px; height:13px; }
+
+.body-row{ display:flex; align-items:stretch; }
+.sidebar{ width:var(--sidebar-w); flex:0 0 auto; background:var(--red); min-height:calc(100vh - 66px); padding:18px 14px 20px; display:flex; flex-direction:column; gap:4px; position:sticky; top:66px; height:calc(100vh - 66px); overflow-y:auto; }
+.navgroup{ display:flex; flex-direction:column; gap:2px; margin-bottom:14px; }
+.navlabel{ font-size:10.5px; font-weight:700; color:rgba(255,255,255,.62); text-transform:uppercase; letter-spacing:.09em; padding:8px 12px 6px; }
+.navitem{ display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:10px; font-size:13.5px; font-weight:600; color:rgba(255,255,255,.92); cursor:pointer; }
+.navitem svg{ width:17px; height:17px; flex:0 0 auto; }
+.navitem:hover{ background:rgba(255,255,255,.12); }
+.navitem.active{ background:#fff; color:var(--red-strong); }
+.navitem .tag{ margin-left:auto; font-size:9px; font-weight:700; background:rgba(255,255,255,.22); color:#fff; padding:2px 7px; border-radius:99px; }
+.sidebar-foot{ margin-top:auto; display:flex; align-items:center; gap:10px; padding:12px 10px; border-top:1px solid rgba(255,255,255,.2); }
+.avatar{ width:32px; height:32px; border-radius:9px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--red-strong); }
+.sidebar-foot .who{ font-size:12.5px; font-weight:700; color:#fff; }
+.sidebar-foot .role{ font-size:10.5px; color:rgba(255,255,255,.75); }
+.sidebar-foot svg{ width:14px; height:14px; margin-left:auto; color:rgba(255,255,255,.75); }
+
+.main{ flex:1; min-width:0; }
+.content{ padding:20px 24px 60px; display:flex; flex-direction:column; gap:16px; max-width:1600px; }
+
+/* ===== status cards ===== */
+.kpi-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.kpi{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; cursor:pointer; transition:border-color .15s, transform .1s; }
+.kpi:hover{ transform:translateY(-1px); }
+.kpi.on{ border-color:var(--red); box-shadow:0 0 0 1px var(--red); }
+.kpi .top{ display:flex; align-items:center; justify-content:space-between; }
+.kpi .lbl{ font-size:12px; color:var(--text-dim); font-weight:600; }
+.kpi .icon{ width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center; background:var(--red-soft); }
+.kpi .icon svg{ width:15px; height:15px; color:var(--red); }
+.kpi.selesai .icon{ background:rgba(62,199,118,.16); } .kpi.selesai .icon svg{ color:#4ade80; }
+.kpi.kendala .icon{ background:rgba(234,32,39,.18); } .kpi.kendala .icon svg{ color:#ff6b6f; }
+.kpi .val{ font-size:32px; font-weight:700; margin-top:12px; font-family:'Space Grotesk',sans-serif; }
+.kpi .foot{ font-size:11.5px; color:var(--text-faint); margin-top:4px; }
+
+/* ===== toolbar ===== */
+.sec-head{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.sec-head h2{ font-size:15.5px; }
+.sec-head .hint{ font-size:11.5px; color:var(--text-faint); margin-top:2px; }
+.toolbar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.search{ display:flex; align-items:center; gap:7px; background:var(--panel); border:1px solid var(--border); border-radius:9px; padding:8px 12px; }
+.search svg{ width:14px; height:14px; color:var(--text-faint); }
+.search input{ background:transparent; border:0; outline:0; color:var(--text); font-size:12.5px; width:170px; font-family:inherit; }
+.select{ background:var(--panel); border:1px solid var(--border); color:var(--text-dim); font-size:12px; padding:8px 11px; border-radius:9px; font-family:inherit; cursor:pointer; }
+.btn-primary{ display:flex; align-items:center; gap:7px; background:var(--red); color:#fff; font-size:12.5px; font-weight:700; padding:9px 15px; border-radius:9px; cursor:pointer; border:0; font-family:inherit; }
+.btn-primary svg{ width:14px; height:14px; }
+.btn-primary:hover{ background:var(--red-strong); }
+.chip-filter{ display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; color:var(--red); background:var(--red-soft); padding:6px 11px; border-radius:99px; cursor:pointer; }
+.chip-filter svg{ width:11px; height:11px; }
+
+/* ===== gantt ===== */
+.gantt-wrap{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.gantt-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.gantt{ display:grid; grid-template-columns:190px repeat(19, 92px) 74px 74px; min-width:max-content; }
+.g-head{ display:contents; }
+.g-head > div{ position:sticky; top:0; z-index:5; background:var(--panel-2); border-bottom:1px solid var(--border); font-size:10.5px; font-weight:700; color:var(--text-dim); padding:10px 8px; text-align:center; }
+.g-head .corner{ position:sticky; left:0; z-index:6; text-align:left; padding-left:14px; background:var(--panel-2); }
+.g-head .now{ color:var(--red); }
+.g-head .plancol{ background:var(--panel-3); }
+.g-row{ display:contents; }
+.g-rig{ position:sticky; left:0; background:var(--panel); z-index:3; border-bottom:1px solid var(--border-soft); border-right:1px solid var(--border); padding:10px 12px; display:flex; flex-direction:column; justify-content:center; gap:1px; }
+.g-rig .name{ font-size:11.5px; font-weight:700; }
+.g-rig .num{ font-size:10px; color:var(--text-faint); }
+.g-cell{ border-bottom:1px solid var(--border-soft); border-right:1px solid var(--border-soft); position:relative; min-height:52px; }
+.g-cell.now-col{ background:rgba(234,32,39,.09); border-right:1px solid rgba(234,32,39,.4); }
+.g-plan{ border-bottom:1px solid var(--border-soft); background:var(--panel-3); display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; font-family:'IBM Plex Mono',monospace; }
+.g-plan.prognose{ color:#f0a93b; }
+.g-plan.plan{ color:var(--text-dim); }
+.block{ position:absolute; top:8px; bottom:8px; border-radius:7px; padding:0 8px 0 20px; display:flex; align-items:center; font-size:10px; font-weight:700; color:#221417; overflow:hidden; white-space:nowrap; cursor:pointer; border:1px solid rgba(0,0,0,.15); transition:transform .1s, box-shadow .1s; }
+.block:hover{ transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.4); z-index:4; }
+.block.dark{ color:#f6f5f4; }
+.block .stag{ position:absolute; left:6px; top:50%; transform:translateY(-50%); width:11px; height:11px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:8px; }
+.block .stag.selesai{ background:#2f9e5c; color:#fff; }
+.block .stag.progres{ background:#e0980a; color:#fff; }
+.block .stag.kendala{ background:#c8141b; color:#fff; }
+.c-tajak{ background:#3ec776; } .c-miru{ background:#f0a93b; } .c-konstruksi{ background:#f4d03f; }
+.c-lahan{ background:#8fd9a8; } .c-bayar{ background:#4b9bf0; } .c-kjpp{ background:#c084f5; }
+.c-sosialisasi{ background:#3ecfc9; } .c-pengadaan{ background:#a5a3ab; color:#221417; }
+.c-lain{ background:#e6d9bd; } .c-eksplorasi{ background:#221417; color:#f6f5f4; border:1px solid #5a3438; }
+.c-acceptance{ background:#9fc6ee; }
+.c-kontrakhabis{ background:repeating-linear-gradient(135deg,#5a3438,#5a3438 5px,#432529 5px,#432529 10px); color:#f0dcde; }
+.empty-row{ padding:40px; text-align:center; color:var(--text-faint); font-size:13px; }
+
+/* ===== modal ===== */
+.overlay{ position:fixed; inset:0; background:rgba(10,8,9,.6); backdrop-filter:blur(2px); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
+.overlay.show{ display:flex; }
+.modal{ background:var(--panel); border:1px solid var(--border); border-radius:16px; width:100%; max-width:560px; max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.5); }
+.modal.modal-detail{ max-width:600px; }
+.modal.modal-confirm{ max-width:400px; }
+.modal-head{ display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border-soft); position:sticky; top:0; background:var(--panel); z-index:2; }
+.modal-head h3{ font-size:16px; }
+.modal-close{ width:28px; height:28px; border-radius:8px; background:var(--panel-2); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.modal-close svg{ width:13px; height:13px; }
+.modal-body{ padding:20px 22px; display:flex; flex-direction:column; gap:16px; }
+.modal-foot{ display:flex; align-items:center; justify-content:flex-end; gap:10px; padding:16px 22px; border-top:1px solid var(--border-soft); }
+.btn-ghost{ padding:9px 16px; border-radius:9px; background:var(--panel-2); color:var(--text-dim); font-size:12.5px; font-weight:700; cursor:pointer; border:1px solid var(--border-soft); font-family:inherit; }
+.btn-ghost:hover{ color:#fff; }
+.btn-danger{ padding:9px 16px; border-radius:9px; background:var(--red); color:#fff; font-size:12.5px; font-weight:700; cursor:pointer; border:0; font-family:inherit; }
+.btn-danger:hover{ background:var(--red-strong); }
+
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.field{ display:flex; flex-direction:column; gap:6px; }
+.field.full{ grid-column:1/-1; }
+.field label{ font-size:11.5px; font-weight:700; color:var(--text-dim); }
+.field label .req{ color:var(--red); }
+.field input,.field select,.field textarea{ background:var(--panel-2); border:1px solid var(--border-soft); border-radius:9px; padding:10px 12px; color:var(--text); font-size:12.5px; font-family:inherit; outline:0; }
+.field input:focus,.field select:focus,.field textarea:focus{ border-color:var(--red); }
+.field textarea{ resize:vertical; min-height:70px; }
+.field .err{ font-size:10.5px; color:#ff6b6f; display:none; }
+.field.invalid input,.field.invalid select{ border-color:#ff6b6f; }
+.field.invalid .err{ display:block; }
+
+.detail-hero{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+.detail-hero h4{ font-size:16.5px; font-family:'Space Grotesk',sans-serif; }
+.detail-hero .rig{ font-size:12px; color:var(--text-faint); margin-top:3px; }
+.status-chip{ display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; padding:5px 10px; border-radius:99px; flex:0 0 auto; }
+.status-chip.selesai{ background:rgba(62,199,118,.16); color:#4ade80; }
+.status-chip.progres{ background:rgba(240,169,59,.18); color:#f0a93b; }
+.status-chip.kendala{ background:rgba(234,32,39,.18); color:#ff6b6f; }
+.status-chip .d{ width:6px; height:6px; border-radius:50%; background:currentColor; }
+.detail-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
+.dkv .k{ font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; font-weight:700; }
+.dkv .v{ font-size:13px; margin-top:4px; font-weight:600; }
+.detail-note{ font-size:12.5px; color:var(--text-dim); line-height:1.6; background:var(--panel-2); border-radius:10px; padding:12px 14px; }
+
+@media (max-width:980px){
+  .sidebar,.logo-block{ display:none; }
+  .topbar-right .navbtn span{ display:none; }
+  .kpi-row{ grid-template-columns:1fr; }
+  .form-grid{ grid-template-columns:1fr; }
+  .detail-grid{ grid-template-columns:1fr; }
+  .content{ padding:14px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="topbar">
+    <div class="logo-block">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ea2027"/><path d="M12 5c2 3 4 4.5 4 7.5A4 4 0 0112 17a4 4 0 01-4-4.5C8 9.5 10 8 12 5z" fill="#fff"/></svg></div>
+      <div><div class="name">Pertamina</div><div class="sub">Admin Panel</div></div>
+      <div class="collapse-btn"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></div>
+    </div>
+    <div class="topbar-mid">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
+      <div><h1>Jadwal</h1><div class="desc">Jadwal &amp; progres pekerjaan sumur per rig</div></div>
+    </div>
+    <div class="topbar-right">
+      <a class="navbtn" href="https://claude.ai/artifact/EwkrgTTW4cCBA8j69sPU8Z"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Home</span></a>
+      <a class="navbtn" href="https://claude.ai/artifact/EH5arTMaPEVWVHWKDwWPnb"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg><span>About</span></a>
+      <a class="navbtn" href="https://claude.ai/artifact/4r993MvjtHceG4XDbyLkZS"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg><span>Dashboard</span></a>
+      <div class="tb-divider"></div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="badge-dot"></span></div>
+      <div class="clockpill"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span id="clock">--:--</span></div>
+    </div>
+  </div>
+
+  <div class="body-row">
+    <aside class="sidebar">
+      <div class="navgroup">
+        <div class="navlabel">Utama</div>
+        <a class="navitem" href="https://claude.ai/artifact/4r993MvjtHceG4XDbyLkZS"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Dashboard</a>
+      </div>
+      <div class="navgroup">
+        <div class="navlabel">Manajemen Data</div>
+        <a class="navitem" href="https://claude.ai/artifact/4Pn1G6J5brGgef2KZD5nJs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/></svg>Alat</a>
+        <a class="navitem" href="https://claude.ai/artifact/3Tx4yrubn1vLofh3GTQuBu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 21s-7-6.2-7-11a7 7 0 1114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>Lokasi</a>
+        <div class="navitem active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Jadwal</div>
+      </div>
+      <div class="navgroup">
+        <div class="navlabel">System &amp; Security</div>
+        <a class="navitem" href="https://claude.ai/artifact/EV6JBmbXZEG4ZHFCahMU85"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="3.4"/><path d="M4 20c1.6-4 5-6 8-6s6.4 2 8 6"/></svg>Manajemen User</a>
+        <a class="navitem" href="https://claude.ai/artifact/CeGcE89U5JJPFyVFpMKpo5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 3h9l5 5v13H6z"/><path d="M9 12h6M9 16h6M9 8h2"/></svg>Audit Log</a>
+      </div>
+      <div class="navgroup">
+        <div class="navlabel">Support</div>
+        <a class="navitem" href="https://claude.ai/artifact/GLCLFssVrvURCtpVrmEHWV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 19.5V4.6c0-.9.7-1.6 1.6-1.6H16l4 4v12.5a1.6 1.6 0 01-1.6 1.6H5.6A1.6 1.6 0 014 19.5z"/><path d="M15 3v4.4c0 .66.54 1.2 1.2 1.2H20"/></svg>Dokumentasi</a>
+        <a class="navitem" href="https://claude.ai/artifact/MFsZe2HE31zHBD9Wvb7tAA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.6-2.3 1.8-2.4 3.4M12 17h.01"/></svg>FAQ</a>
+        <a class="navitem" href="https://claude.ai/artifact/3nkAZhQwSSMjMeCbVVkiQ8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.8-4.2 5.4-6.4 7.5-6.4s5.7 2.2 7.5 6.4"/></svg>Profil</a>
+      </div>
+      <a class="sidebar-foot" href="https://claude.ai/artifact/3nkAZhQwSSMjMeCbVVkiQ8" style="text-decoration:none">
+        <div class="avatar">A1</div>
+        <div><div class="who">Admin 1</div><div class="role">Administrator</div></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+    </aside>
+
+    <div class="main">
+      <div class="content">
+
+        <!-- status jadwal -->
+        <div class="kpi-row">
+          <div class="kpi selesai" data-status="selesai">
+            <div class="top"><span class="lbl">Selesai</span><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l4 4L19 6"/></svg></span></div>
+            <div class="val" id="kpiSelesai">0</div>
+            <div class="foot">Pekerjaan sumur tuntas</div>
+          </div>
+          <div class="kpi" data-status="progres">
+            <div class="top"><span class="lbl">Menunggu / Progres</span><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span></div>
+            <div class="val" id="kpiProgres">0</div>
+            <div class="foot">Sedang berjalan / menunggu proses</div>
+          </div>
+          <div class="kpi kendala" data-status="kendala">
+            <div class="top"><span class="lbl">Kendala</span><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9L2.7 18a2 2 0 001.8 3h15a2 2 0 001.8-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg></span></div>
+            <div class="val" id="kpiKendala">0</div>
+            <div class="foot">Perlu tindak lanjut segera</div>
+          </div>
+        </div>
+
+        <!-- toolbar -->
+        <div class="sec-head">
+          <div>
+            <h2>Jadwal &amp; Progres Pekerjaan Sumur</h2>
+            <div class="hint" id="resultHint">Klik blok untuk detail · scroll untuk lihat Jun 2026 – Des 2027</div>
+          </div>
+          <div class="toolbar" id="toolbarRow">
+            <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><input id="searchInput" placeholder="Cari rig atau sumur…"></div>
+            <select class="select" id="filterKategori">
+              <option value="">Semua kategori</option>
+              <option value="c-tajak">Sudah Tajak</option>
+              <option value="c-miru">MIRU / RFD</option>
+              <option value="c-konstruksi">Konstruksi</option>
+              <option value="c-lahan">Lahan Bebas</option>
+              <option value="c-bayar">Pembayaran / Pengajuan</option>
+              <option value="c-kjpp">Finalisasi KJPP</option>
+              <option value="c-sosialisasi">ARS / Survei Sosialisasi</option>
+              <option value="c-pengadaan">Proses Pengadaan Rig</option>
+              <option value="c-acceptance">Rig Acceptance</option>
+              <option value="c-lain">Lain-lain</option>
+              <option value="c-eksplorasi">Eksplorasi / Kompleks</option>
+              <option value="c-kontrakhabis">Kontrak Habis</option>
+            </select>
+            <button class="btn-primary" id="btnAdd"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Tambah Jadwal</button>
+            <span class="chip-filter" id="kodeChip" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg><span id="kodeChipText"></span></span>
+          </div>
+        </div>
+
+        <div class="gantt-wrap">
+          <div class="gantt-scroll"><div class="gantt" id="ganttGrid"></div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah/Edit -->
+<div class="overlay" id="overlayForm">
+  <div class="modal">
+    <div class="modal-head"><h3 id="formTitle">Tambah Jadwal</h3><div class="modal-close" data-close="overlayForm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></div></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field full"><label>Rig <span class="req">*</span></label><select id="fRig"></select></div>
+        <div class="field full"><label>Nama Sumur / Pekerjaan <span class="req">*</span></label><input id="fLabel" placeholder="cth. KRG-PK5 (CF 2027)"><span class="err">Wajib diisi</span></div>
+        <div class="field"><label>Kategori <span class="req">*</span></label>
+          <select id="fKategori">
+            <option value="c-tajak">Sudah Tajak</option><option value="c-miru">MIRU / RFD</option>
+            <option value="c-konstruksi">Konstruksi</option><option value="c-lahan">Lahan Bebas</option>
+            <option value="c-bayar">Pembayaran / Pengajuan</option><option value="c-kjpp">Finalisasi KJPP</option>
+            <option value="c-sosialisasi">ARS / Survei Sosialisasi</option><option value="c-pengadaan">Proses Pengadaan Rig</option>
+            <option value="c-acceptance">Rig Acceptance</option><option value="c-lain">Lain-lain</option>
+            <option value="c-eksplorasi">Eksplorasi / Kompleks</option><option value="c-kontrakhabis">Kontrak Habis</option>
+          </select>
+        </div>
+        <div class="field"><label>Status <span class="req">*</span></label>
+          <select id="fStatus"><option value="selesai">Selesai</option><option value="progres">Menunggu / Progres</option><option value="kendala">Kendala</option></select>
+        </div>
+        <div class="field"><label>Bulan Mulai <span class="req">*</span></label><select id="fBulan"></select></div>
+        <div class="field"><label>Durasi (bulan) <span class="req">*</span></label><input id="fDurasi" type="number" min="1" max="19" value="1"></div>
+        <div class="field full"><label>Catatan</label><textarea id="fCatatan" placeholder="Catatan tambahan…"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" data-close="overlayForm">Batal</button>
+      <button class="btn-primary" id="btnSave"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M5 12l4 4L19 6"/></svg>Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detail -->
+<div class="overlay" id="overlayDetail">
+  <div class="modal modal-detail">
+    <div class="modal-head"><h3>Detail Jadwal</h3><div class="modal-close" data-close="overlayDetail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></div></div>
+    <div class="modal-body">
+      <div class="detail-hero">
+        <div><h4 id="dLabel">—</h4><div class="rig" id="dRig">—</div></div>
+        <div id="dStatusChip"></div>
+      </div>
+      <div class="detail-grid">
+        <div class="dkv"><div class="k">Kategori</div><div class="v" id="dKategori">—</div></div>
+        <div class="dkv"><div class="k">Periode</div><div class="v" id="dPeriode">—</div></div>
+      </div>
+      <div>
+        <div class="dkv" style="margin-bottom:8px"><div class="k">Catatan</div></div>
+        <div class="detail-note" id="dCatatan">—</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="act-btn danger" id="btnDetailDelete" style="width:auto;padding:9px 16px;gap:6px;display:flex;align-items:center;border-radius:9px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Hapus</button>
+      <button class="btn-ghost" data-close="overlayDetail">Tutup</button>
+      <button class="btn-primary" id="btnDetailEdit"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Konfirmasi hapus -->
+<div class="overlay" id="overlayConfirm">
+  <div class="modal modal-confirm">
+    <div class="modal-head"><h3>Hapus Jadwal?</h3><div class="modal-close" data-close="overlayConfirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></div></div>
+    <div class="modal-body"><p style="font-size:13px;color:var(--text-dim);line-height:1.6;margin:0">Item jadwal <b id="confirmName" style="color:var(--text)"></b> akan dihapus permanen dari Gantt. Tindakan ini tidak dapat dibatalkan.</p></div>
+    <div class="modal-foot">
+      <button class="btn-ghost" data-close="overlayConfirm">Batal</button>
+      <button class="btn-danger" id="btnConfirmDelete">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORE_KEY = "pertamina_jadwal_v1";
+const MONTHS = ["Jun-26","Jul-26","Aug-26","Sep-26","Oct-26","Nov-26","Dec-26","Jan-27","Feb-27","Mar-27","Apr-27","May-27","Jun-27","Jul-27","Aug-27","Sep-27","Oct-27","Nov-27","Dec-27"];
+const NOW_COL = 1;
+const KATEGORI_LABEL = {
+  "c-tajak":"Sudah Tajak","c-miru":"MIRU / RFD","c-konstruksi":"Konstruksi","c-lahan":"Lahan Bebas",
+  "c-bayar":"Pembayaran / Pengajuan","c-kjpp":"Finalisasi KJPP","c-sosialisasi":"ARS / Survei Sosialisasi",
+  "c-pengadaan":"Proses Pengadaan Rig","c-acceptance":"Rig Acceptance","c-lain":"Lain-lain",
+  "c-eksplorasi":"Eksplorasi / Kompleks","c-kontrakhabis":"Kontrak Habis",
+};
+const RIGS = [
+  "PDSI #36.1/SKYTOP650-M","PDSI #16.2/NT45-M","PDSI #17.2/NT45-M","AIRLANGGA #55/550 HP",
+  "TMMJ #23/550 HP","PDSI #18.2/LTO-650","PDSI #20.2/EMSCOD2-M","PDSI #25.2/LTO750-M",
+  "ACS #21/750 HP","AMS #01/750 HP ex WBR #5","UNSPEC RIG #4/750 HP","PDSI #01.2/N80B-M",
+  "PDSI #05.2/OW760-M","PDSI #30.2/D1000-E","PDSI #32.2/N80UE","TMMJ #05/1000 HP",
+];
+
+const SEED = [
+  {rig:"PDSI #36.1/SKYTOP650-M",label:"Pekerjaan WI Zona 4",kategori:"c-lain",s:0,n:6,status:"progres",catatan:"Menyelesaikan pekerjaan WI sebelum lanjut ke sumur eksplorasi PHE Jambi Merang."},
+  {rig:"PDSI #36.1/SKYTOP650-M",label:"MJ-A21 (CF 2026)",kategori:"c-eksplorasi",s:9,n:2,status:"progres",catatan:"Est. tajak M3 Desember 2026, on progress persiapan tender rig."},
+  {rig:"PDSI #16.2/NT45-M",label:"MJ-A22 29.07-IP",kategori:"c-tajak",s:1,n:1,status:"selesai",catatan:"IP 29 Juli 2026 — completed sesuai plan."},
+  {rig:"PDSI #16.2/NT45-M",label:"MJ-A9 (CF 2026)",kategori:"c-konstruksi",s:8,n:2,status:"progres",catatan:"CF 2025→2026, konstruksi lokasi berjalan."},
+  {rig:"PDSI #17.2/NT45-M",label:"ROSELLA SHALLOW SOUTH (CO)",kategori:"c-eksplorasi",s:0,n:3,status:"progres",catatan:"Change Order, sumur eksplorasi."},
+  {rig:"PDSI #17.2/NT45-M",label:"TAP-NW1 (CF 2025,2026)",kategori:"c-kjpp",s:8,n:2,status:"progres",catatan:"Finalisasi KJPP tanam tumbuh."},
+  {rig:"AIRLANGGA #55/550 HP",label:"Kontrak Habis",kategori:"c-kontrakhabis",s:0,n:2,status:"kendala",catatan:"Kontrak rig berakhir, perlu proses re-tender sebelum lanjut sumur berikutnya."},
+  {rig:"TMMJ #23/550 HP",label:"Proses Pengadaan Rig — Inplace Jun 2026",kategori:"c-pengadaan",s:0,n:5,status:"kendala",catatan:"On progress persiapan tender, rencana beroperasi di Zona 1 akhir tahun; MJ-OS2 dikaji rig lain sementara."},
+  {rig:"TMMJ #23/550 HP",label:"MJ-OS2 (CF 2025)",kategori:"c-lain",s:6,n:1,status:"progres",catatan:"Sudah dihindari lokasi sengketa, est. penyampaian nilai JKPP M4 Agustus 2026."},
+  {rig:"PDSI #18.2/LTO-650",label:"BKB-AR.016 (CF 2025)",kategori:"c-konstruksi",s:1,n:2,status:"progres",catatan:"Est. selesai konstruksi M4 September 2026."},
+  {rig:"PDSI #18.2/LTO-650",label:"BKB-AR.012 (CF 2025,2026)",kategori:"c-bayar",s:4,n:2,status:"kendala",catatan:"Masih negosiasi nilai tanam tumbuh lahan sawah, perlu konstruksi jembatan."},
+  {rig:"PDSI #20.2/EMSCOD2-M",label:"BEL-K9 19.06-IP",kategori:"c-tajak",s:0,n:1,status:"selesai",catatan:"Est. release 5 Agustus 2026."},
+  {rig:"PDSI #20.2/EMSCOD2-M",label:"BEL-K8",kategori:"c-tajak",s:1,n:1,status:"selesai",catatan:"Sudah tajak."},
+  {rig:"PDSI #20.2/EMSCOD2-M",label:"KRG-PN2 / PN4",kategori:"c-konstruksi",s:2,n:2,status:"progres",catatan:"Konstruksi lokasi berjalan."},
+  {rig:"PDSI #25.2/LTO750-M",label:"Konstruksi (Penggantian Tanam Tumbuh)",kategori:"c-konstruksi",s:0,n:2,status:"kendala",catatan:"Menunggu penyelesaian isu tanam tumbuh sebelum lanjut konstruksi."},
+  {rig:"PDSI #25.2/LTO750-M",label:"BKB-AR.008",kategori:"c-tajak",s:3,n:1,status:"selesai",catatan:"Sudah tajak."},
+  {rig:"ACS #21/750 HP",label:"KRG-PK2 20.05-IP",kategori:"c-tajak",s:0,n:2,status:"selesai",catatan:"IP tercapai sesuai jadwal."},
+  {rig:"ACS #21/750 HP",label:"Amandemen PJWK",kategori:"c-sosialisasi",s:3,n:1,status:"progres",catatan:"Proses administrasi amandemen kontrak."},
+  {rig:"AMS #01/750 HP ex WBR #5",label:"KRG-PB8",kategori:"c-konstruksi",s:1,n:1,status:"progres",catatan:"Konstruksi lokasi berjalan."},
+  {rig:"AMS #01/750 HP ex WBR #5",label:"BEL-K10",kategori:"c-lain",s:4,n:2,status:"progres",catatan:"Pembayaran tanam tumbuh lokasi existing masih menunggu memo lanjut konstruksi tahap 1."},
+  {rig:"UNSPEC RIG #4/750 HP",label:"Proses Pengadaan Rig (Re-Tender) — Est. Agustus 2026",kategori:"c-pengadaan",s:0,n:5,status:"kendala",catatan:"Rig acceptance menyusul setelah proses tender ulang selesai."},
+  {rig:"PDSI #01.2/N80B-M",label:"Konstruksi Lokasi (Sumur Pengganti)",kategori:"c-konstruksi",s:0,n:3,status:"progres",catatan:"Konstruksi lokasi sumur pengganti RK 2026."},
+  {rig:"PDSI #01.2/N80B-M",label:"TLJT-04",kategori:"c-tajak",s:3,n:1,status:"selesai",catatan:"Sudah tajak."},
+  {rig:"PDSI #05.2/OW760-M",label:"TTB-A1 (CF 2025)",kategori:"c-lain",s:1,n:1,status:"progres",catatan:"Est. release 12/13 Agustus 2026."},
+  {rig:"PDSI #05.2/OW760-M",label:"ABB-A5",kategori:"c-tajak",s:2,n:1,status:"selesai",catatan:"Sudah tajak."},
+  {rig:"PDSI #05.2/OW760-M",label:"LVT-J (CF 2025)",kategori:"c-kjpp",s:6,n:1,status:"progres",catatan:"Finalisasi KJPP."},
+  {rig:"PDSI #30.2/D1000-E",label:"LBA-X13 (CF 2023,2025)",kategori:"c-lain",s:2,n:1,status:"progres",catatan:"On progress pengajuan reposisi SS."},
+  {rig:"PDSI #30.2/D1000-E",label:"KRG-PB5/HZ1 (CF 2026)",kategori:"c-lain",s:5,n:1,status:"progres",catatan:"M2 Juli 2026 sudah permohonan pengajuan PLK ke SKK Migas."},
+  {rig:"PDSI #32.2/N80UE",label:"ABB-A6 — Amandemen Kontrak",kategori:"c-lain",s:2,n:1,status:"progres",catatan:"Amandemen kontrak dan evaluasi kesiapan rig."},
+  {rig:"PDSI #32.2/N80UE",label:"BRG-U9",kategori:"c-bayar",s:4,n:1,status:"progres",catatan:"Est. lahan bebas M1 Agustus 2026."},
+  {rig:"TMMJ #05/1000 HP",label:"BKT-AW2",kategori:"c-sosialisasi",s:5,n:1,status:"progres",catatan:"Menggunakan slot UKL-UPL BKT-C (sebelumnya BKT-E)."},
+  {rig:"TMMJ #05/1000 HP",label:"BKT-AW3",kategori:"c-sosialisasi",s:6,n:1,status:"progres",catatan:"On progress survei sosialisasi, est. lahan bebas M2 September 2026, tetap gunakan slot UKL-UPL BKT-F."},
+];
+
+const RIG_KODE_LAPANGAN = {
+  "PDSI #36.1/SKYTOP650-M":"MJ", "PDSI #16.2/NT45-M":"MJ", "PDSI #17.2/NT45-M":"RSS",
+  "TMMJ #23/550 HP":"MJ", "PDSI #18.2/LTO-650":"BKB", "PDSI #20.2/EMSCOD2-M":"BEL",
+  "PDSI #25.2/LTO750-M":"BKB", "ACS #21/750 HP":"KRG", "AMS #01/750 HP ex WBR #5":"KRG",
+  "PDSI #01.2/N80B-M":"TMB", "PDSI #05.2/OW760-M":"TTB", "PDSI #30.2/D1000-E":"LBA",
+  "PDSI #32.2/N80UE":"ABB", "TMMJ #05/1000 HP":"BKT",
+};
+let activeKodeFilter = null;
+
+function loadData(){
+  try{ const raw = localStorage.getItem(STORE_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+  const seeded = SEED.map((it,i)=>({id:i+1, ...it}));
+  saveData(seeded);
+  return seeded;
+}
+function saveData(data){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }catch(e){} }
+
+let ITEMS = loadData();
+let editingId = null, deletingId = null, activeStatusFilter = null;
+
+// ---- populate selects ----
+document.getElementById('fRig').innerHTML = RIGS.map(r=>`<option value="${r}">${r}</option>`).join("");
+document.getElementById('fBulan').innerHTML = MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join("");
+
+function renderKPI(){
+  const sel = ITEMS.filter(i=>i.status==="selesai").length;
+  const prog = ITEMS.filter(i=>i.status==="progres").length;
+  const ken = ITEMS.filter(i=>i.status==="kendala").length;
+  document.getElementById('kpiSelesai').textContent = sel;
+  document.getElementById('kpiProgres').textContent = prog;
+  document.getElementById('kpiKendala').textContent = ken;
+  document.querySelectorAll('.kpi[data-status]').forEach(el=>el.classList.toggle('on', el.dataset.status===activeStatusFilter));
+}
+
+document.querySelectorAll('.kpi[data-status]').forEach(el=>{
+  el.addEventListener('click',()=>{
+    activeStatusFilter = activeStatusFilter===el.dataset.status ? null : el.dataset.status;
+    renderKPI(); renderGantt();
+  });
+});
+
+function statusLabel(s){ return s==="selesai"?"Selesai":s==="kendala"?"Kendala":"Menunggu / Progres"; }
+function stagIcon(s){ return s==="selesai" ? "✓" : s==="kendala" ? "!" : "…"; }
+
+function getFiltered(){
+  const q = (document.getElementById('searchInput').value||"").toLowerCase();
+  const kat = document.getElementById('filterKategori').value;
+  return ITEMS.filter(it=>{
+    const matchQ = !q || it.rig.toLowerCase().includes(q) || it.label.toLowerCase().includes(q);
+    const matchKat = !kat || it.kategori===kat;
+    const matchStatus = !activeStatusFilter || it.status===activeStatusFilter;
+    const matchKode = !activeKodeFilter || RIG_KODE_LAPANGAN[it.rig]===activeKodeFilter;
+    return matchQ && matchKat && matchStatus && matchKode;
+  });
+}
+
+function renderGantt(){
+  const filtered = getFiltered();
+  const grid = document.getElementById('ganttGrid');
+  grid.innerHTML = "";
+  grid.style.gridTemplateColumns = `190px repeat(${MONTHS.length}, 92px) 74px 74px`;
+
+  const head = document.createElement('div'); head.className="g-head";
+  const corner = document.createElement('div'); corner.className="corner"; corner.textContent="Rig"; head.appendChild(corner);
+  MONTHS.forEach((m,i)=>{ const d=document.createElement('div'); d.textContent=m; if(i===NOW_COL) d.classList.add('now'); head.appendChild(d); });
+  const p1=document.createElement('div'); p1.className="plancol"; p1.textContent="Plan"; head.appendChild(p1);
+  const p2=document.createElement('div'); p2.className="plancol"; p2.textContent="Prognose"; head.appendChild(p2);
+  grid.appendChild(head);
+
+  let anyVisible = false;
+  RIGS.forEach((rigName,idx)=>{
+    const rigItems = filtered.filter(it=>it.rig===rigName);
+    if(rigItems.length===0) return;
+    anyVisible = true;
+    const row = document.createElement('div'); row.className="g-row";
+    const rig = document.createElement('div'); rig.className="g-rig";
+    rig.innerHTML = `<div class="name">${rigName}</div><div class="num">Rig ${idx+1}</div>`;
+    row.appendChild(rig);
+    for(let i=0;i<MONTHS.length;i++){ const cell=document.createElement('div'); cell.className="g-cell"; if(i===NOW_COL) cell.classList.add('now-col'); row.appendChild(cell); }
+    rigItems.forEach(it=>{
+      const cellIndex = 1 + it.s;
+      const targetCell = row.children[cellIndex];
+      if(!targetCell) return;
+      const block = document.createElement('div'); block.className="block "+it.kategori;
+      if(["c-eksplorasi","c-kontrakhabis"].includes(it.kategori)) block.classList.add('dark');
+      block.style.width = `calc(${it.n*92 - 6}px)`; block.style.left = "3px";
+      block.innerHTML = `<span class="stag ${it.status}">${stagIcon(it.status)}</span><span>${it.label}</span>`;
+      block.addEventListener('click',()=>openDetail(it.id));
+      targetCell.appendChild(block);
+    });
+    const allRigItems = ITEMS.filter(it=>it.rig===rigName);
+    const plan = 6, prognose = Math.max(1, Math.round(allRigItems.length*2.2));
+    const pc = document.createElement('div'); pc.className="g-plan plan"; pc.textContent=plan; row.appendChild(pc);
+    const pg = document.createElement('div'); pg.className="g-plan prognose"; pg.textContent=prognose; row.appendChild(pg);
+    grid.appendChild(row);
+  });
+
+  document.getElementById('resultHint').textContent = anyVisible
+    ? `Menampilkan ${filtered.length} dari ${ITEMS.length} item jadwal`
+    : "";
+  if(!anyVisible){
+    grid.innerHTML += `<div style="grid-column:1/-1"><div class="empty-row">Tidak ada item jadwal yang cocok dengan pencarian/filter.</div></div>`;
+  }
+}
+
+// ---- modal open/close ----
+function openOverlay(id){ document.getElementById(id).classList.add('show'); }
+function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('[data-close]').forEach(el=>el.addEventListener('click',()=>closeOverlay(el.dataset.close)));
+document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',(e)=>{ if(e.target===ov) closeOverlay(ov.id); }));
+
+function resetForm(){
+  document.getElementById('fRig').value = RIGS[0];
+  document.getElementById('fLabel').value = "";
+  document.getElementById('fKategori').value = "c-konstruksi";
+  document.getElementById('fStatus').value = "progres";
+  document.getElementById('fBulan').value = "0";
+  document.getElementById('fDurasi').value = "1";
+  document.getElementById('fCatatan').value = "";
+  document.querySelectorAll('#overlayForm .field').forEach(f=>f.classList.remove('invalid'));
+}
+document.getElementById('btnAdd').addEventListener('click',()=>{
+  editingId=null; resetForm();
+  document.getElementById('formTitle').textContent="Tambah Jadwal";
+  openOverlay('overlayForm');
+});
+
+function fillForm(it){
+  document.getElementById('fRig').value = it.rig;
+  document.getElementById('fLabel').value = it.label;
+  document.getElementById('fKategori').value = it.kategori;
+  document.getElementById('fStatus').value = it.status;
+  document.getElementById('fBulan').value = it.s;
+  document.getElementById('fDurasi').value = it.n;
+  document.getElementById('fCatatan').value = it.catatan||"";
+}
+function openEdit(id){
+  const it = ITEMS.find(x=>x.id===id); if(!it) return;
+  editingId=id; fillForm(it);
+  document.querySelectorAll('#overlayForm .field').forEach(f=>f.classList.remove('invalid'));
+  document.getElementById('formTitle').textContent="Edit Jadwal";
+  closeOverlay('overlayDetail');
+  openOverlay('overlayForm');
+}
+
+document.getElementById('btnSave').addEventListener('click',()=>{
+  const label = document.getElementById('fLabel').value.trim();
+  let valid = true;
+  const f = document.getElementById('fLabel').closest('.field');
+  f.classList.toggle('invalid', !label); if(!label) valid=false;
+  if(!valid) return;
+
+  const payload = {
+    rig: document.getElementById('fRig').value,
+    label,
+    kategori: document.getElementById('fKategori').value,
+    status: document.getElementById('fStatus').value,
+    s: parseInt(document.getElementById('fBulan').value),
+    n: Math.max(1, parseInt(document.getElementById('fDurasi').value)||1),
+    catatan: document.getElementById('fCatatan').value.trim(),
+  };
+  if(editingId){
+    ITEMS = ITEMS.map(it=> it.id===editingId ? {...it, ...payload} : it);
+  } else {
+    const nextId = ITEMS.length ? Math.max(...ITEMS.map(it=>it.id))+1 : 1;
+    ITEMS.push({id:nextId, ...payload});
+  }
+  saveData(ITEMS);
+  closeOverlay('overlayForm');
+  renderKPI(); renderGantt();
+});
+
+// ---- detail ----
+function openDetail(id){
+  const it = ITEMS.find(x=>x.id===id); if(!it) return;
+  document.getElementById('dLabel').textContent = it.label;
+  document.getElementById('dRig').textContent = it.rig;
+  document.getElementById('dStatusChip').innerHTML = `<span class="status-chip ${it.status}"><span class="d"></span>${statusLabel(it.status)}</span>`;
+  document.getElementById('dKategori').textContent = KATEGORI_LABEL[it.kategori]||it.kategori;
+  document.getElementById('dPeriode').textContent = `${MONTHS[it.s]} — ${MONTHS[Math.min(it.s+it.n-1, MONTHS.length-1)]} (${it.n} bulan)`;
+  document.getElementById('dCatatan').textContent = it.catatan || "Tidak ada catatan tambahan.";
+  document.getElementById('btnDetailEdit').onclick = ()=>openEdit(id);
+  document.getElementById('btnDetailDelete').onclick = ()=>{ closeOverlay('overlayDetail'); openConfirmDelete(id); };
+  openOverlay('overlayDetail');
+}
+
+function openConfirmDelete(id){
+  const it = ITEMS.find(x=>x.id===id); if(!it) return;
+  deletingId=id;
+  document.getElementById('confirmName').textContent = `${it.rig} — ${it.label}`;
+  openOverlay('overlayConfirm');
+}
+document.getElementById('btnConfirmDelete').addEventListener('click',()=>{
+  ITEMS = ITEMS.filter(it=>it.id!==deletingId);
+  saveData(ITEMS);
+  deletingId=null;
+  closeOverlay('overlayConfirm');
+  renderKPI(); renderGantt();
+});
+
+document.getElementById('searchInput').addEventListener('input', renderGantt);
+document.getElementById('filterKategori').addEventListener('change', renderGantt);
+
+document.getElementById('kodeChip').addEventListener('click',()=>{
+  activeKodeFilter = null;
+  document.getElementById('kodeChip').style.display = "none";
+  const url = new URL(window.location.href); url.searchParams.delete('kode');
+  window.history.replaceState({}, '', url);
+  renderGantt();
+});
+(function checkQuery(){
+  const params = new URLSearchParams(window.location.search);
+  const kode = params.get('kode');
+  if(kode){
+    activeKodeFilter = kode.toUpperCase();
+    document.getElementById('kodeChip').style.display = "flex";
+    document.getElementById('kodeChipText').textContent = `Lapangan: ${activeKodeFilter} ✕`;
+  }
+})();
+
+function tickClock(){
+  const now = new Date();
+  document.getElementById('clock').textContent = String(now.getHours()).padStart(2,'0')+":"+String(now.getMinutes()).padStart(2,'0');
+}
+tickClock(); setInterval(tickClock, 15000);
+
+renderKPI(); renderGantt();
+</script>
+</body>
+</html>

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pertamina Admin Panel — Lokasi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#ea2027; --red-strong:#c8141b; --red-soft:rgba(234,32,39,.16);
+  --bg:#212326; --panel:#3b2226; --panel-2:#492226; --panel-3:#54282d;
+  --border:rgba(234,32,39,.28); --border-soft:rgba(255,255,255,.08);
+  --white:#ffffff; --text:#f6f5f4; --text-dim:rgba(246,245,244,.66); --text-faint:rgba(246,245,244,.4);
+  --sidebar-w:264px; --radius:14px; --land:#5c3238; --land-2:#6b393f; --sea:#2a1c1f;
+  font-family:'Inter',system-ui,sans-serif; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#eceae7; --panel:#ffffff; --panel-2:#f7f1f1; --panel-3:#f2e9e9;
+    --text:#241417; --text-dim:#5c4b4d; --text-faint:#8b7a7c; --border:rgba(234,32,39,.22); --border-soft:rgba(0,0,0,.08);
+    --land:#e7d9da; --land-2:#f0e4e5; --sea:#f7f1f1;
+  }
+}
+:root[data-theme="dark"]{ --bg:#212326; --panel:#3b2226; --panel-2:#492226; --text:#f6f5f4; --text-dim:rgba(246,245,244,.66); --text-faint:rgba(246,245,244,.4); }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+*{ box-sizing:border-box; }
+body{ margin:0; background:var(--bg); color:var(--text); min-height:100%; -webkit-font-smoothing:antialiased; }
+h1,h2,h3{ font-family:'Space Grotesk',sans-serif; letter-spacing:-.01em; margin:0; }
+a{ text-decoration:none; color:inherit; }
+
+/* ===== topbar + sidebar (identik) ===== */
+.shell{ min-height:100vh; }
+.topbar{ display:flex; align-items:center; background:var(--red); color:#fff; padding-top:env(safe-area-inset-top,0px); position:sticky; top:0; z-index:30; }
+.logo-block{ width:var(--sidebar-w); flex:0 0 auto; display:flex; align-items:center; gap:11px; padding:14px 18px; }
+.logo-block .mark{ width:36px; height:36px; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; }
+.logo-block .mark svg{ width:20px; height:20px; }
+.logo-block .name{ font-weight:700; font-size:15px; line-height:1.15; }
+.logo-block .sub{ font-size:11px; opacity:.85; }
+.collapse-btn{ margin-left:auto; width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.12); cursor:pointer; flex:0 0 auto; }
+.collapse-btn svg{ width:14px; height:14px; }
+.topbar-mid{ flex:1; display:flex; align-items:center; gap:12px; padding:0 20px; border-left:1px solid rgba(255,255,255,.18); min-width:0; }
+.topbar-mid .ic{ width:34px; height:34px; border-radius:9px; background:rgba(255,255,255,.14); display:flex; align-items:center; justify-content:center; flex:0 0 auto; }
+.topbar-mid .ic svg{ width:17px; height:17px; }
+.topbar-mid h1{ font-size:17px; }
+.topbar-mid .desc{ font-size:11.5px; opacity:.82; margin-top:1px; }
+.topbar-right{ display:flex; align-items:center; gap:6px; padding:0 20px; flex:0 0 auto; }
+.navbtn{ display:flex; align-items:center; gap:7px; padding:9px 14px; border-radius:9px; font-size:13.5px; font-weight:600; color:#fff; cursor:pointer; white-space:nowrap; }
+.navbtn svg{ width:15px; height:15px; opacity:.92; }
+.navbtn:hover{ background:rgba(255,255,255,.12); }
+.tb-divider{ width:1px; height:24px; background:rgba(255,255,255,.28); margin:0 6px; }
+.iconbtn{ width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; }
+.iconbtn:hover{ background:rgba(255,255,255,.12); }
+.iconbtn svg{ width:16px; height:16px; }
+.badge-dot{ position:absolute; top:6px; right:6px; width:7px; height:7px; border-radius:50%; background:#fff; border:2px solid var(--red); }
+.clockpill{ display:flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; background:rgba(255,255,255,.14); padding:7px 12px; border-radius:99px; }
+.clockpill svg{ width:13px; height:13px; }
+
+.body-row{ display:flex; align-items:stretch; }
+.sidebar{ width:var(--sidebar-w); flex:0 0 auto; background:var(--red); min-height:calc(100vh - 66px); padding:18px 14px 20px; display:flex; flex-direction:column; gap:4px; position:sticky; top:66px; height:calc(100vh - 66px); overflow-y:auto; }
+.navgroup{ display:flex; flex-direction:column; gap:2px; margin-bottom:14px; }
+.navlabel{ font-size:10.5px; font-weight:700; color:rgba(255,255,255,.62); text-transform:uppercase; letter-spacing:.09em; padding:8px 12px 6px; }
+.navitem{ display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:10px; font-size:13.5px; font-weight:600; color:rgba(255,255,255,.92); cursor:pointer; }
+.navitem svg{ width:17px; height:17px; flex:0 0 auto; }
+.navitem:hover{ background:rgba(255,255,255,.12); }
+.navitem.active{ background:#fff; color:var(--red-strong); }
+.navitem .tag{ margin-left:auto; font-size:9px; font-weight:700; background:rgba(255,255,255,.22); color:#fff; padding:2px 7px; border-radius:99px; }
+.sidebar-foot{ margin-top:auto; display:flex; align-items:center; gap:10px; padding:12px 10px; border-top:1px solid rgba(255,255,255,.2); }
+.avatar{ width:32px; height:32px; border-radius:9px; background:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--red-strong); }
+.sidebar-foot .who{ font-size:12.5px; font-weight:700; color:#fff; }
+.sidebar-foot .role{ font-size:10.5px; color:rgba(255,255,255,.75); }
+.sidebar-foot svg{ width:14px; height:14px; margin-left:auto; color:rgba(255,255,255,.75); }
+
+.main{ flex:1; min-width:0; }
+.content{ padding:20px 24px 60px; display:flex; flex-direction:column; gap:16px; max-width:1600px; }
+
+/* ===== map panel ===== */
+.map-wrap{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.map-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border-soft); flex-wrap:wrap; gap:10px; }
+.map-head h2{ font-size:15.5px; }
+.map-head .hint{ font-size:11.5px; color:var(--text-faint); margin-top:2px; }
+.map-controls{ display:flex; gap:8px; }
+.map-btn{ display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--text-dim); background:var(--panel-2); border:1px solid var(--border-soft); padding:7px 12px; border-radius:8px; cursor:pointer; }
+.map-btn.on{ background:var(--red); color:#fff; border-color:transparent; }
+.map-btn svg{ width:13px; height:13px; }
+.map-stage{ position:relative; background:var(--sea); }
+.map-stage svg{ display:block; width:100%; height:auto; }
+.island{ fill:var(--land); stroke:var(--land-2); stroke-width:1.4; }
+.marker{ cursor:pointer; }
+.marker circle.dot{ fill:var(--red); stroke:#fff; stroke-width:1.6; transition:r .15s; }
+.marker:hover circle.dot, .marker.active circle.dot{ r:8; }
+.marker circle.pulse{ fill:none; stroke:var(--red); stroke-width:1.4; opacity:.55; }
+.marker text{ font-family:'IBM Plex Mono',monospace; font-size:9px; font-weight:700; fill:#fff; paint-order:stroke; stroke:#1a1113; stroke-width:2.4; pointer-events:none; }
+.map-legend{ display:flex; align-items:center; gap:8px; padding:10px 20px; font-size:11px; color:var(--text-faint); border-top:1px solid var(--border-soft); }
+.map-legend .d{ width:9px; height:9px; border-radius:50%; background:var(--red); border:1.5px solid #fff; }
+
+/* ===== toolbar & table (mirip Alat) ===== */
+.sec-head{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.sec-head h2{ font-size:15.5px; }
+.sec-head .hint{ font-size:11.5px; color:var(--text-faint); margin-top:2px; }
+.toolbar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.search{ display:flex; align-items:center; gap:7px; background:var(--panel); border:1px solid var(--border); border-radius:9px; padding:8px 12px; }
+.search svg{ width:14px; height:14px; color:var(--text-faint); }
+.search input{ background:transparent; border:0; outline:0; color:var(--text); font-size:12.5px; width:170px; font-family:inherit; }
+.select{ background:var(--panel); border:1px solid var(--border); color:var(--text-dim); font-size:12px; padding:8px 11px; border-radius:9px; font-family:inherit; cursor:pointer; }
+.btn-primary{ display:flex; align-items:center; gap:7px; background:var(--red); color:#fff; font-size:12.5px; font-weight:700; padding:9px 15px; border-radius:9px; cursor:pointer; border:0; font-family:inherit; }
+.btn-primary svg{ width:14px; height:14px; }
+.btn-primary:hover{ background:var(--red-strong); }
+
+.table-wrap{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.table-scroll{ overflow-x:auto; }
+table{ width:100%; border-collapse:collapse; }
+thead th{ position:sticky; top:0; background:var(--panel-2); text-align:left; font-size:10.5px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:.05em; padding:12px 14px; border-bottom:1px solid var(--border); white-space:nowrap; }
+tbody td{ padding:11px 14px; font-size:12.5px; border-bottom:1px solid var(--border-soft); white-space:nowrap; }
+tbody tr:last-child td{ border-bottom:0; }
+tbody tr{ transition:background .15s; }
+tbody tr:hover, tbody tr.highlight{ background:var(--panel-2); }
+.kode-chip{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:12px; background:var(--panel-3); color:var(--text); padding:4px 9px; border-radius:7px; letter-spacing:.03em; }
+.count-pill{ font-size:11.5px; color:var(--text-dim); }
+.count-pill b{ color:var(--text); }
+.row-actions{ display:flex; align-items:center; gap:4px; }
+.act-btn{ width:29px; height:29px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:var(--panel-3); border:1px solid var(--border-soft); }
+.act-btn svg{ width:14px; height:14px; color:var(--text-dim); }
+.act-btn:hover{ background:var(--red-soft); }
+.act-btn.danger:hover svg{ color:#ff6b6f; }
+
+/* ===== modal (reuse pola Alat) ===== */
+.overlay{ position:fixed; inset:0; background:rgba(10,8,9,.6); backdrop-filter:blur(2px); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
+.overlay.show{ display:flex; }
+.modal{ background:var(--panel); border:1px solid var(--border); border-radius:16px; width:100%; max-width:560px; max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.5); }
+.modal.modal-detail{ max-width:600px; }
+.modal.modal-confirm{ max-width:400px; }
+.modal-head{ display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border-soft); position:sticky; top:0; background:var(--panel); z-index:2; }
+.modal-head h3{ font-size:16px; }
+.modal-close{ width:28px; height:28px; border-radius:8px; background:var(--panel-2); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.modal-close svg{ width:13px; height:13px; }
+.modal-body{ padding:20px 22px; display:flex; flex-direction:column; gap:16px; }
+.modal-foot{ display:flex; align-items:center; justify-content:flex-end; gap:10px; padding:16px 22px; border-top:1px solid var(--border-soft); }
+.btn-ghost{ padding:9px 16px; border-radius:9px; background:var(--panel-2); color:var(--text-dim); font-size:12.5px; font-weight:700; cursor:pointer; border:1px solid var(--border-soft); font-family:inherit; }
+.btn-ghost:hover{ color:#fff; }
+.btn-danger{ padding:9px 16px; border-radius:9px; background:var(--red); color:#fff; font-size:12.5px; font-weight:700; cursor:pointer; border:0; font-family:inherit; }
+.btn-danger:hover{ background:var(--red-strong); }
+.btn-disabled{ padding:9px 16px; border-radius:9px; background:var(--panel-2); color:var(--text-faint); font-size:12.5px; font-weight:700; border:1px dashed var(--border-soft); cursor:not-allowed; font-family:inherit; }
+.btn-link{ padding:9px 16px; border-radius:9px; background:var(--panel-2); color:var(--text-dim); font-size:12.5px; font-weight:700; border:1px solid var(--border-soft); cursor:pointer; font-family:inherit; }
+.btn-link:hover{ color:#fff; border-color:var(--red); }
+
+.form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.field{ display:flex; flex-direction:column; gap:6px; }
+.field.full{ grid-column:1/-1; }
+.field label{ font-size:11.5px; font-weight:700; color:var(--text-dim); }
+.field label .req{ color:var(--red); }
+.field input,.field select,.field textarea{ background:var(--panel-2); border:1px solid var(--border-soft); border-radius:9px; padding:10px 12px; color:var(--text); font-size:12.5px; font-family:inherit; outline:0; }
+.field input:focus,.field select:focus,.field textarea:focus{ border-color:var(--red); }
+.field textarea{ resize:vertical; min-height:70px; }
+.field .err{ font-size:10.5px; color:#ff6b6f; display:none; }
+.field.invalid input,.field.invalid select{ border-color:#ff6b6f; }
+.field.invalid .err{ display:block; }
+.field .subnote{ font-size:10.5px; color:var(--text-faint); }
+
+.detail-hero{ display:flex; gap:14px; align-items:flex-start; }
+.detail-kode{ width:60px; height:60px; border-radius:14px; background:var(--panel-3); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; flex:0 0 auto; font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:14px; }
+.detail-hero h4{ font-size:17px; font-family:'Space Grotesk',sans-serif; }
+.detail-hero .addr{ font-size:12px; color:var(--text-faint); margin-top:3px; line-height:1.5; }
+.detail-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
+.dkv .k{ font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; font-weight:700; }
+.dkv .v{ font-size:13px; margin-top:4px; font-weight:600; }
+.detail-note{ font-size:12.5px; color:var(--text-dim); line-height:1.6; background:var(--panel-2); border-radius:10px; padding:12px 14px; }
+.chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
+.mini-chip{ font-size:11px; font-weight:600; background:var(--panel-3); color:var(--text-dim); padding:4px 9px; border-radius:99px; border:1px solid var(--border-soft); }
+
+@media (max-width:980px){
+  .sidebar,.logo-block{ display:none; }
+  .topbar-right .navbtn span{ display:none; }
+  .form-grid{ grid-template-columns:1fr; }
+  .detail-grid{ grid-template-columns:1fr; }
+  .content{ padding:14px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="topbar">
+    <div class="logo-block">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ea2027"/><path d="M12 5c2 3 4 4.5 4 7.5A4 4 0 0112 17a4 4 0 01-4-4.5C8 9.5 10 8 12 5z" fill="#fff"/></svg></div>
+      <div><div class="name">Pertamina</div><div class="sub">Admin Panel</div></div>
+      <div class="collapse-btn"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></div>
+    </div>
+    <div class="topbar-mid">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"><path d="M12 21s-7-6.2-7-11a7 7 0 1114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg></div>
+      <div><h1>Lokasi</h1><div class="desc">Peta &amp; data kode lapangan operasional</div></div>
+    </div>
+    <div class="topbar-right">
+      <a class="navbtn" href="https://claude.ai/artifact/EwkrgTTW4cCBA8j69sPU8Z"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Home</span></a>
+      <a class="navbtn" href="https://claude.ai/artifact/EH5arTMaPEVWVHWKDwWPnb"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg><span>About</span></a>
+      <a class="navbtn" href="https://claude.ai/artifact/4r993MvjtHceG4XDbyLkZS"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg><span>Dashboard</span></a>
+      <div class="tb-divider"></div>
+      <div class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><span class="badge-dot"></span></div>
+      <div class="clockpill"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span id="clock">--:--</span></div>
+    </div>
+  </div>
+
+  <div class="body-row">
+    <aside class="sidebar">
+      <div class="navgroup">
+        <div class="navlabel">Utama</div>
+        <a class="navitem" href="https://claude.ai/artifact/4r993MvjtHceG4XDbyLkZS"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Dashboard</a>
+      </div>
+      <div class="navgroup">
+        <div class="navlabel">Manajemen Data</div>
+        <a class="navitem" href="https://claude.ai/artifact/4Pn1G6J5brGgef2KZD5nJs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-7h6v7"/></svg>Alat</a>
+        <div class="navitem active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 21s-7-6.2-7-11a7 7 0 1114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>Lokasi</div>
+        <a class="navitem" href="https://claude.ai/artifact/87yuJr4XRn6p8hebCW4NNm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Jadwal</a>
+      </div>
+      <div class="navgroup">
+        <div class="navlabel">System &amp; Security</div>
+        <a class="navitem" href="https://claude.ai/artifact/EV6JBmbXZEG4ZHFCahMU85"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="3.4"/><path d="M4 20c1.6-4 5-6 8-6s6.4 2 8 6"/></svg>Manajemen User</a>
+        <a class="navitem" href="https://claude.ai/artifact/CeGcE89U5JJPFyVFpMKpo5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 3h9l5 5v13H6z"/><path d="M9 12h6M9 16h6M9 8h2"/></svg>Audit Log</a>
+      </div>
+      <div class="navgroup">
+        <div class="navlabel">Support</div>
+        <a class="navitem" href="https://claude.ai/artifact/GLCLFssVrvURCtpVrmEHWV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 19.5V4.6c0-.9.7-1.6 1.6-1.6H16l4 4v12.5a1.6 1.6 0 01-1.6 1.6H5.6A1.6 1.6 0 014 19.5z"/><path d="M15 3v4.4c0 .66.54 1.2 1.2 1.2H20"/></svg>Dokumentasi</a>
+        <a class="navitem" href="https://claude.ai/artifact/MFsZe2HE31zHBD9Wvb7tAA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.6-2.3 1.8-2.4 3.4M12 17h.01"/></svg>FAQ</a>
+        <a class="navitem" href="https://claude.ai/artifact/3nkAZhQwSSMjMeCbVVkiQ8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.8-4.2 5.4-6.4 7.5-6.4s5.7 2.2 7.5 6.4"/></svg>Profil</a>
+      </div>
+      <a class="sidebar-foot" href="https://claude.ai/artifact/3nkAZhQwSSMjMeCbVVkiQ8" style="text-decoration:none">
+        <div class="avatar">A1</div>
+        <div><div class="who">Admin 1</div><div class="role">Administrator</div></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      </a>
+    </aside>
+
+    <div class="main">
+      <div class="content">
+
+        <!-- Peta -->
+        <div class="map-wrap">
+          <div class="map-head">
+            <div>
+              <h2>Peta Lapangan Operasional</h2>
+              <div class="hint">Titik lokasi ilustratif berdasarkan provinsi — klik titik untuk sorot data di tabel</div>
+            </div>
+            <div class="map-controls">
+              <div class="map-btn" id="btnZoomFull"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M8 21H5a2 2 0 01-2-2v-3M16 21h3a2 2 0 002-2v-3"/></svg>Indonesia</div>
+              <div class="map-btn on" id="btnZoomSumbagsel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>Fokus Sumbagsel</div>
+            </div>
+          </div>
+          <div class="map-stage">
+            <svg id="mapSvg" viewBox="150 250 200 130" xmlns="http://www.w3.org/2000/svg">
+              <g id="islands"></g>
+              <g id="markers"></g>
+            </svg>
+          </div>
+          <div class="map-legend"><span class="d"></span>Kode lapangan terdaftar &nbsp;·&nbsp; koordinat bersifat perkiraan (belum digeoreferensi presisi)</div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="sec-head">
+          <div>
+            <h2>Daftar Kode Lapangan</h2>
+            <div class="hint" id="resultHint">Menampilkan semua kode lapangan</div>
+          </div>
+          <div class="toolbar">
+            <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><input id="searchInput" placeholder="Cari kode / nama tempat…"></div>
+            <select class="select" id="filterProvinsi"><option value="">Semua provinsi</option></select>
+            <button class="btn-primary" id="btnAdd"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Tambah Lokasi</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>No</th><th>Kode Lapangan</th><th>Nama Tempat</th><th>Provinsi</th><th>Jml Sumur</th><th>Jml Rig</th><th>Tanggal Dipetakan</th><th>Aksi</th></tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah/Edit -->
+<div class="overlay" id="overlayForm">
+  <div class="modal">
+    <div class="modal-head"><h3 id="formTitle">Tambah Lokasi</h3><div class="modal-close" data-close="overlayForm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></div></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>Kode Lapangan <span class="req">*</span></label><input id="fKode" placeholder="cth. KRG" style="text-transform:uppercase"><span class="err">Kode wajib diisi &amp; unik</span></div>
+        <div class="field"><label>Nama Tempat <span class="req">*</span></label><input id="fNama" placeholder="cth. Lapangan Kuang"><span class="err">Nama tempat wajib diisi</span></div>
+        <div class="field full"><label>Provinsi <span class="req">*</span></label><select id="fProvinsi"></select><span class="subnote">Menentukan posisi titik di peta (perkiraan berdasarkan pusat provinsi)</span></div>
+        <div class="field"><label>Kota / Kabupaten</label><input id="fKota" placeholder="cth. Kab. Muara Enim"></div>
+        <div class="field"><label>Kecamatan</label><input id="fKecamatan" placeholder="cth. Kec. —"></div>
+        <div class="field full"><label>Keterangan</label><textarea id="fKeterangan" placeholder="Catatan tambahan tentang lokasi ini…"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" data-close="overlayForm">Batal</button>
+      <button class="btn-primary" id="btnSave"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M5 12l4 4L19 6"/></svg>Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detail -->
+<div class="overlay" id="overlayDetail">
+  <div class="modal modal-detail">
+    <div class="modal-head"><h3>Detail Lokasi</h3><div class="modal-close" data-close="overlayDetail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></div></div>
+    <div class="modal-body">
+      <div class="detail-hero">
+        <div class="detail-kode" id="dKodeBox">—</div>
+        <div>
+          <h4 id="dNama">—</h4>
+          <div class="addr" id="dAlamat">—</div>
+        </div>
+      </div>
+      <div class="detail-grid">
+        <div class="dkv"><div class="k">Kode Lapangan</div><div class="v" id="dKode">—</div></div>
+        <div class="dkv"><div class="k">Tanggal Dipetakan</div><div class="v" id="dTanggal">—</div></div>
+      </div>
+      <div>
+        <div class="dkv" style="margin-bottom:8px"><div class="k">Sumur di lokasi ini</div></div>
+        <div class="chip-row" id="dSumurChips"></div>
+      </div>
+      <div>
+        <div class="dkv" style="margin-bottom:8px"><div class="k">Rig yang beroperasi</div></div>
+        <div class="chip-row" id="dRigChips"></div>
+      </div>
+      <div>
+        <div class="dkv" style="margin-bottom:8px"><div class="k">Keterangan</div></div>
+        <div class="detail-note" id="dKeterangan">—</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="btn-disabled" id="btnLihatJadwal" title="Lihat jadwal lapangan ini">Lihat di Jadwal</span>
+      <button class="btn-ghost" data-close="overlayDetail">Tutup</button>
+      <button class="btn-primary" id="btnDetailEdit"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Konfirmasi hapus -->
+<div class="overlay" id="overlayConfirm">
+  <div class="modal modal-confirm">
+    <div class="modal-head"><h3>Hapus Lokasi?</h3><div class="modal-close" data-close="overlayConfirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></div></div>
+    <div class="modal-body"><p style="font-size:13px;color:var(--text-dim);line-height:1.6;margin:0">Kode lapangan <b id="confirmName" style="color:var(--text)"></b> akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p></div>
+    <div class="modal-foot">
+      <button class="btn-ghost" data-close="overlayConfirm">Batal</button>
+      <button class="btn-danger" id="btnConfirmDelete">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORE_KEY = "pertamina_lokasi_v1";
+
+const PROVINSI = [
+  ["Aceh",5.5,95.3],["Sumatera Utara",2.5,99.0],["Sumatera Barat",-0.9,100.4],["Riau",0.5,101.9],
+  ["Kepulauan Riau",3.9,108.1],["Jambi",-1.6,103.6],["Sumatera Selatan",-3.3,104.0],["Bengkulu",-3.8,102.3],
+  ["Lampung",-4.8,105.0],["Kepulauan Bangka Belitung",-2.7,106.4],["DKI Jakarta",-6.2,106.8],
+  ["Jawa Barat",-6.9,107.6],["Jawa Tengah",-7.2,110.1],["DI Yogyakarta",-7.8,110.4],["Jawa Timur",-7.5,112.2],
+  ["Banten",-6.4,106.1],["Bali",-8.4,115.2],["Nusa Tenggara Barat",-8.6,117.4],["Nusa Tenggara Timur",-8.7,121.1],
+  ["Kalimantan Barat",0.0,109.3],["Kalimantan Tengah",-1.7,113.3],["Kalimantan Selatan",-3.1,115.3],
+  ["Kalimantan Timur",0.5,116.4],["Kalimantan Utara",3.1,116.9],["Sulawesi Utara",1.3,124.8],
+  ["Sulawesi Tengah",-1.4,121.5],["Sulawesi Selatan",-3.7,119.9],["Sulawesi Tenggara",-4.1,122.5],
+  ["Gorontalo",0.7,122.4],["Sulawesi Barat",-2.6,119.2],["Maluku",-3.2,130.1],["Maluku Utara",0.8,127.6],
+  ["Papua Barat",-1.3,133.0],["Papua",-4.3,138.5],
+];
+function project(lat,lon){ return { x:(lon-95)*19.565, y:(11-lat)*19.09 }; }
+
+const SEED = [
+  {kode:"MJ",nama:"Lapangan MJ",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Cluster sumur MJ-A9, MJ-A21, MJ-A22, MJ-OS2.",sumur:["MJ-A21","MJ-A22","MJ-A9","MJ-OS2"],rig:["PDSI #36.1/SKYTOP650-M","PDSI #16.2/NT45-M","TMMJ #23/550 HP"],tgl:"30 Jul 2026"},
+  {kode:"RSS",nama:"Lapangan Rosella Shallow South",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Sumur eksplorasi shallow.",sumur:["Rosella Shallow South"],rig:["PDSI #17.2/NT45-M"],tgl:"30 Jul 2026"},
+  {kode:"TAP",nama:"Lapangan TAP",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Cluster sumur TAP-NW.",sumur:["TAP-NW1"],rig:["PDSI #17.2/NT45-M"],tgl:"30 Jul 2026"},
+  {kode:"BKB",nama:"Lapangan BKB",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Cluster sumur BKB-AR.",sumur:["BKB-AR.016","BKB-AR.012","BKB-AR.008"],rig:["PDSI #18.2/LTO-650","PDSI #25.2/LTO750-M"],tgl:"30 Jul 2026"},
+  {kode:"BEL",nama:"Lapangan BEL",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Cluster sumur BEL-K.",sumur:["BEL-K9","BEL-K8","BEL-K10"],rig:["PDSI #20.2/EMSCOD2-M","AMS #01/750 HP ex WBR #5"],tgl:"30 Jul 2026"},
+  {kode:"KRG",nama:"Lapangan KRG",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Cluster sumur KRG-PN/PK/PB/HZ.",sumur:["KRG-PN2","KRG-PN4","KRG-PK2","KRG-PB8","KRG-PB5","KRG-HZ1"],rig:["PDSI #20.2/EMSCOD2-M","ACS #21/750 HP","AMS #01/750 HP ex WBR #5","PDSI #30.2/D1000-E"],tgl:"30 Jul 2026"},
+  {kode:"TMB",nama:"Lapangan TMB",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Cluster sumur pengganti TMB-PG.",sumur:["TMB-PG3","TMB-PG5","TMB-PG7"],rig:["PDSI #01.2/N80B-M"],tgl:"30 Jul 2026"},
+  {kode:"TLJT",nama:"Lapangan TLJT",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Sumur TLJT-04.",sumur:["TLJT-04"],rig:["PDSI #01.2/N80B-M"],tgl:"30 Jul 2026"},
+  {kode:"TTB",nama:"Lapangan TTB",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Sumur TTB-A1.",sumur:["TTB-A1"],rig:["PDSI #05.2/OW760-M"],tgl:"30 Jul 2026"},
+  {kode:"ABB",nama:"Lapangan ABB",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Cluster sumur ABB-A.",sumur:["ABB-A5","ABB-A6"],rig:["PDSI #05.2/OW760-M","PDSI #32.2/N80UE"],tgl:"30 Jul 2026"},
+  {kode:"LVT",nama:"Lapangan LVT",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Sumur LVT-J.",sumur:["LVT-J"],rig:["PDSI #05.2/OW760-M"],tgl:"30 Jul 2026"},
+  {kode:"LBA",nama:"Lapangan LBA",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Sumur LBA-X13.",sumur:["LBA-X13"],rig:["PDSI #30.2/D1000-E"],tgl:"30 Jul 2026"},
+  {kode:"BRG",nama:"Lapangan BRG",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Sumur BRG-U9.",sumur:["BRG-U9"],rig:["PDSI #32.2/N80UE"],tgl:"30 Jul 2026"},
+  {kode:"BKT",nama:"Lapangan BKT",provinsi:"Sumatera Selatan",kota:"",kecamatan:"",ket:"Cluster sumur BKT-AW.",sumur:["BKT-AW2","BKT-AW3"],rig:["TMMJ #05/1000 HP"],tgl:"30 Jul 2026"},
+];
+
+function loadData(){
+  try{ const raw = localStorage.getItem(STORE_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+  const seeded = SEED.map((it,i)=>({id:i+1, ...it}));
+  saveData(seeded);
+  return seeded;
+}
+function saveData(data){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(data)); }catch(e){} }
+
+let LOKASI = loadData();
+let editingId = null, deletingId = null, activeId = null;
+
+// ---- populate provinsi selects ----
+function fillProvinsiSelect(el, withAll){
+  el.innerHTML = (withAll ? '<option value="">Semua provinsi</option>' : '') + PROVINSI.map(p=>`<option value="${p[0]}">${p[0]}</option>`).join("");
+}
+fillProvinsiSelect(document.getElementById('filterProvinsi'), true);
+fillProvinsiSelect(document.getElementById('fProvinsi'), false);
+
+// ---- simplified Indonesia island shapes (schematic, not geodata-accurate) ----
+const ISLANDS = [
+  "M6,105 C40,150 55,120 72,141 C110,180 146,200 175,250 C195,285 201,313 188,320 C165,300 143,282 120,250 C95,215 80,190 50,150 C25,120 6,105 6,105 Z",
+  "M199,337 C230,328 280,335 301,343 C325,348 345,349 378,366 C368,378 340,362 295,357 C260,352 225,345 199,347 Z",
+  "M430,131 C460,150 470,180 431,220 C412,242 400,250 381,274 C355,265 335,258 300,240 C285,225 278,210 290,175 C310,150 340,138 390,120 Z",
+  "M583,186 C565,200 555,225 537,286 C525,296 510,300 477,308 C465,290 468,255 470,240 C480,228 475,210 487,197 C500,180 540,165 583,186 Z",
+  "M709,227 C750,212 800,215 850,235 C875,250 887,280 887,320 C887,345 860,360 830,340 C795,325 765,300 740,270 C720,250 709,240 709,227 Z",
+];
+const NT_CHAIN = [[-8.4,115.2,"Bali"],[-8.6,116.3,"Lombok"],[-8.7,117.8,"Sumbawa"],[-8.6,121.0,"Flores"],[-9.0,124.9,"Timor"]];
+const MALUKU_DOTS = [[-3.7,128.2],[0.8,127.9]];
+
+function drawIslands(){
+  const g = document.getElementById('islands');
+  g.innerHTML = ISLANDS.map(d=>`<path class="island" d="${d}"/>`).join("") +
+    NT_CHAIN.map(([lat,lon])=>{ const p=project(lat,lon); return `<circle class="island" cx="${p.x}" cy="${p.y}" r="7"/>`; }).join("") +
+    MALUKU_DOTS.map(([lat,lon])=>{ const p=project(lat,lon); return `<circle class="island" cx="${p.x}" cy="${p.y}" r="10"/>`; }).join("");
+}
+drawIslands();
+
+function provinsiCoord(name){
+  const p = PROVINSI.find(x=>x[0]===name);
+  return p ? {lat:p[1],lon:p[2]} : {lat:-3.3,lon:104.0};
+}
+
+function drawMarkers(){
+  const g = document.getElementById('markers');
+  g.innerHTML = "";
+  LOKASI.forEach((loc,i)=>{
+    const c = provinsiCoord(loc.provinsi);
+    const base = project(c.lat, c.lon);
+    // jitter deterministik supaya titik satu provinsi tidak numpuk
+    const angle = (i * 47) % 360 * Math.PI/180;
+    const radius = 6 + (i%4)*4;
+    const x = base.x + Math.cos(angle)*radius;
+    const y = base.y + Math.sin(angle)*radius;
+    const m = document.createElementNS("http://www.w3.org/2000/svg","g");
+    m.setAttribute("class","marker"); m.dataset.id = loc.id;
+    m.innerHTML = `<circle class="pulse" cx="${x}" cy="${y}" r="9"/><circle class="dot" cx="${x}" cy="${y}" r="5"/><text x="${x+8}" y="${y+3}">${loc.kode}</text>`;
+    m.addEventListener('click',()=>{ setActive(loc.id); highlightRow(loc.id, true); });
+    g.appendChild(m);
+  });
+}
+drawMarkers();
+
+function setActive(id){
+  activeId = id;
+  document.querySelectorAll('.marker').forEach(m=>m.classList.toggle('active', parseInt(m.dataset.id)===id));
+}
+
+// ---- zoom toggle ----
+const mapSvg = document.getElementById('mapSvg');
+document.getElementById('btnZoomSumbagsel').addEventListener('click',(e)=>{
+  mapSvg.setAttribute('viewBox','150 250 200 130');
+  document.getElementById('btnZoomSumbagsel').classList.add('on');
+  document.getElementById('btnZoomFull').classList.remove('on');
+});
+document.getElementById('btnZoomFull').addEventListener('click',(e)=>{
+  mapSvg.setAttribute('viewBox','0 0 900 420');
+  document.getElementById('btnZoomFull').classList.add('on');
+  document.getElementById('btnZoomSumbagsel').classList.remove('on');
+});
+
+// ---- table ----
+function getFiltered(){
+  const q = (document.getElementById('searchInput').value||"").toLowerCase();
+  const prov = document.getElementById('filterProvinsi').value;
+  return LOKASI.filter(a=>{
+    const matchQ = !q || a.kode.toLowerCase().includes(q) || a.nama.toLowerCase().includes(q);
+    const matchP = !prov || a.provinsi===prov;
+    return matchQ && matchP;
+  });
+}
+
+function renderTable(){
+  const rows = getFiltered();
+  const body = document.getElementById('tableBody');
+  document.getElementById('resultHint').textContent = `Menampilkan ${rows.length} dari ${LOKASI.length} kode lapangan`;
+  if(rows.length===0){
+    body.innerHTML = `<tr><td colspan="8"><div style="padding:40px;text-align:center;color:var(--text-faint);font-size:13px">Tidak ada lokasi yang cocok.</div></td></tr>`;
+    return;
+  }
+  body.innerHTML = rows.map((a,i)=>`
+    <tr data-id="${a.id}">
+      <td>${i+1}</td>
+      <td><span class="kode-chip">${a.kode}</span></td>
+      <td>${a.nama}</td>
+      <td>${a.provinsi}</td>
+      <td class="count-pill"><b>${a.sumur.length}</b> sumur</td>
+      <td class="count-pill"><b>${a.rig.length}</b> rig</td>
+      <td>${a.tgl}</td>
+      <td>
+        <div class="row-actions">
+          <div class="act-btn" data-view="${a.id}" title="Lihat detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <div class="act-btn" data-edit="${a.id}" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></div>
+          <div class="act-btn danger" data-del="${a.id}" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></div>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function highlightRow(id, scroll){
+  document.querySelectorAll('tbody tr').forEach(tr=>tr.classList.toggle('highlight', parseInt(tr.dataset.id)===id));
+  if(scroll){
+    const tr = document.querySelector(`tbody tr[data-id="${id}"]`);
+    if(tr) tr.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+}
+
+document.getElementById('tableBody').addEventListener('mouseover',(e)=>{
+  const tr = e.target.closest('tr[data-id]');
+  if(tr) setActive(parseInt(tr.dataset.id));
+});
+document.getElementById('tableBody').addEventListener('click',(e)=>{
+  const view = e.target.closest('[data-view]');
+  const edit = e.target.closest('[data-edit]');
+  const del = e.target.closest('[data-del]');
+  if(view) openDetail(parseInt(view.dataset.view));
+  else if(edit) openEdit(parseInt(edit.dataset.edit));
+  else if(del) openConfirmDelete(parseInt(del.dataset.del));
+});
+
+document.getElementById('searchInput').addEventListener('input', renderTable);
+document.getElementById('filterProvinsi').addEventListener('change', renderTable);
+
+// ---- modal open/close ----
+function openOverlay(id){ document.getElementById(id).classList.add('show'); }
+function closeOverlay(id){ document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('[data-close]').forEach(el=>el.addEventListener('click',()=>closeOverlay(el.dataset.close)));
+document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',(e)=>{ if(e.target===ov) closeOverlay(ov.id); }));
+
+function resetForm(){
+  ['fKode','fNama','fKota','fKecamatan','fKeterangan'].forEach(id=>document.getElementById(id).value="");
+  document.getElementById('fProvinsi').value="Sumatera Selatan";
+  document.querySelectorAll('#overlayForm .field').forEach(f=>f.classList.remove('invalid'));
+}
+document.getElementById('btnAdd').addEventListener('click',()=>{
+  editingId=null; resetForm();
+  document.getElementById('formTitle').textContent="Tambah Lokasi";
+  openOverlay('overlayForm');
+});
+
+function fillForm(a){
+  document.getElementById('fKode').value=a.kode;
+  document.getElementById('fNama').value=a.nama;
+  document.getElementById('fProvinsi').value=a.provinsi;
+  document.getElementById('fKota').value=a.kota||"";
+  document.getElementById('fKecamatan').value=a.kecamatan||"";
+  document.getElementById('fKeterangan').value=a.ket||"";
+}
+function openEdit(id){
+  const a = LOKASI.find(x=>x.id===id); if(!a) return;
+  editingId=id; fillForm(a);
+  document.querySelectorAll('#overlayForm .field').forEach(f=>f.classList.remove('invalid'));
+  document.getElementById('formTitle').textContent="Edit Lokasi";
+  closeOverlay('overlayDetail');
+  openOverlay('overlayForm');
+}
+
+document.getElementById('btnSave').addEventListener('click',()=>{
+  const kode = document.getElementById('fKode').value.trim().toUpperCase();
+  const nama = document.getElementById('fNama').value.trim();
+  let valid = true;
+  const setInvalid=(id,bad)=>{ const f=document.getElementById(id).closest('.field'); f.classList.toggle('invalid',bad); if(bad) valid=false; };
+  setInvalid('fKode', !kode); setInvalid('fNama', !nama);
+  const dup = LOKASI.some(a=>a.kode.toUpperCase()===kode && a.id!==editingId);
+  if(dup){ document.getElementById('fKode').closest('.field').classList.add('invalid'); valid=false; }
+  if(!valid) return;
+
+  const payload = {
+    kode, nama, provinsi: document.getElementById('fProvinsi').value,
+    kota: document.getElementById('fKota').value.trim(),
+    kecamatan: document.getElementById('fKecamatan').value.trim(),
+    ket: document.getElementById('fKeterangan').value.trim(),
+  };
+  if(editingId){
+    LOKASI = LOKASI.map(a=> a.id===editingId ? {...a, ...payload} : a);
+  } else {
+    const nextId = LOKASI.length ? Math.max(...LOKASI.map(a=>a.id))+1 : 1;
+    LOKASI.push({id:nextId, ...payload, sumur:[], rig:[], tgl: new Date().toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})});
+  }
+  saveData(LOKASI);
+  closeOverlay('overlayForm');
+  renderTable(); drawMarkers();
+});
+
+const JADWAL_URL = "https://claude.ai/artifact/87yuJr4XRn6p8hebCW4NNm";
+
+// ---- detail ----
+function openDetail(id){
+  const a = LOKASI.find(x=>x.id===id); if(!a) return;
+  document.getElementById('dKodeBox').textContent = a.kode;
+  document.getElementById('dNama').textContent = a.nama;
+  const alamatParts = [a.kecamatan, a.kota, a.provinsi].filter(Boolean);
+  document.getElementById('dAlamat').textContent = alamatParts.length ? alamatParts.join(", ") : a.provinsi;
+  document.getElementById('dKode').textContent = a.kode;
+  document.getElementById('dTanggal').textContent = a.tgl;
+  document.getElementById('dSumurChips').innerHTML = a.sumur.length ? a.sumur.map(s=>`<span class="mini-chip">${s}</span>`).join("") : `<span class="mini-chip">Belum ada data sumur</span>`;
+  document.getElementById('dRigChips').innerHTML = a.rig.length ? a.rig.map(r=>`<span class="mini-chip">${r}</span>`).join("") : `<span class="mini-chip">Belum ada rig ditugaskan</span>`;
+  document.getElementById('dKeterangan').textContent = a.ket || "Tidak ada keterangan tambahan.";
+  document.getElementById('btnDetailEdit').onclick = ()=>openEdit(id);
+  document.getElementById('btnLihatJadwal').className = "btn-link";
+  document.getElementById('btnLihatJadwal').onclick = ()=>window.open(`${JADWAL_URL}?kode=${a.kode}`, '_blank');
+  document.getElementById('btnLihatJadwal').title = "Buka Jadwal terfilter ke kode ini";
+  setActive(id); highlightRow(id,false);
+  openOverlay('overlayDetail');
+}
+
+// ---- delete ----
+function openConfirmDelete(id){
+  const a = LOKASI.find(x=>x.id===id); if(!a) return;
+  deletingId=id;
+  document.getElementById('confirmName').textContent = `${a.kode} — ${a.nama}`;
+  openOverlay('overlayConfirm');
+}
+document.getElementById('btnConfirmDelete').addEventListener('click',()=>{
+  LOKASI = LOKASI.filter(a=>a.id!==deletingId);
+  saveData(LOKASI);
+  deletingId=null;
+  closeOverlay('overlayConfirm');
+  renderTable(); drawMarkers();
+});
+
+// ---- deep-link ?kode=XXX ----
+(function checkQuery(){
+  const params = new URLSearchParams(window.location.search);
+  const kode = params.get('kode');
+  if(kode){
+    const found = LOKASI.find(a=>a.kode.toUpperCase()===kode.toUpperCase());
+    if(found){ setTimeout(()=>openDetail(found.id), 300); }
+  }
+})();
+
+function tickClock(){
+  const now = new Date();
+  document.getElementById('clock').textContent = String(now.getHours()).padStart(2,'0')+":"+String(now.getMinutes()).padStart(2,'0');
+}
+tickClock(); setInterval(tickClock, 15000);
+
+renderTable();
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --red: #ea2027;
+  --red-strong: #c8141b;
+  --red-soft: rgba(234, 32, 39, 0.16);
+  --bg: #212326;
+  --panel: #3b2226;
+  --panel-2: #492226;
+  --panel-3: #54282d;
+  --border: rgba(234, 32, 39, 0.28);
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --white: #ffffff;
+  --text: #f6f5f4;
+  --text-dim: rgba(246, 245, 244, 0.66);
+  --text-faint: rgba(246, 245, 244, 0.4);
+  --sidebar-w: 264px;
+  --radius: 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eceae7;
+    --panel: #ffffff;
+    --panel-2: #f7f1f1;
+    --panel-3: #f2e9e9;
+    --text: #241417;
+    --text-dim: #5c4b4d;
+    --text-faint: #8b7a7c;
+    --border: rgba(234, 32, 39, 0.22);
+    --border-soft: rgba(0, 0, 0, 0.08);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #212326;
+  --panel: #3b2226;
+  --panel-2: #492226;
+  --text: #f6f5f4;
+  --text-dim: rgba(246, 245, 244, 0.66);
+  --text-faint: rgba(246, 245, 244, 0.4);
+}
+
+.mono {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.font-heading {
+  font-family: 'Space Grotesk', sans-serif;
+}
