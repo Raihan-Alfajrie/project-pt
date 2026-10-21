@@ -138,3 +138,82 @@ Tidak ada yang perlu dikerjakan ulang dari bagian ini **kecuali** diputuskan use
 - [x] Rekomendasi lanjutan (hanya saran, jangan dikerjakan): queue untuk file besar, export terjadwal, import modul lain.
 
 **DoD:** `composer install`, `npm install`, `php artisan migrate --seed`, `npm run build`, `php artisan serve` → aplikasi berjalan; seluruh test lulus; README mutakhir; laporan akhir diserahkan.
+
+---
+
+## Bagian C: Pengembangan Fitur Notifikasi (Fase N1 – N5)
+
+### Fase N1 — Fondasi Database & Model Notifikasi  *(SELESAI)*
+- [x] Buat migrasi tabel `notifications` standar Laravel (`2026_10_21_000001_create_notifications_table.php`).
+- [x] Buat model `App\Models\Notification` yang meng-extend `DatabaseNotification` dengan accessor lengkap (`judul`, `pesan`, `modul`, `tipe`, `url`, `icon`, `waktu_display`, `is_read`).
+- [x] Integrasikan relasi notifikasi pada model `User`.
+- [x] Buat `NotificationFactory` dan `NotificationSeeder`.
+- [x] Tulis feature test fondasi `tests/Feature/NotificationFoundationTest.php`.
+- [x] Jalankan test, pastikan baseline awal 117 tests tidak rusak dan test baru lulus 100% (124 tests, 680 assertions).
+
+**DoD:** Tabel `notifications` terpasang, model berfungsi dengan seluruh accessor, seeder dapat dipanggil, feature test baru lulus.
+
+---
+
+### Fase N2 — API & Endpoint Notifikasi  *(SELESAI)*
+- [x] Endpoint `GET /notifications` (daftar notifikasi user terautentikasi, filter all/unread).
+- [x] Endpoint `GET /notifications/unread-count` (angka jumlah belum dibaca).
+- [x] Endpoint `POST /notifications/{id}/read` (tandai satu dibaca).
+- [x] Endpoint `POST /notifications/mark-all-read` (tandai semua dibaca).
+- [x] Endpoint `DELETE /notifications/{id}` (hapus notifikasi).
+- [x] 10 feature test baru di `NotificationApiTest` lulus (total 134 test, 733 assertions lulus).
+
+**DoD:** Seluruh endpoint berfungsi sesuai hak akses pengguna, test lulus.
+
+---
+
+### Fase N3 — UI Dropdown Navbar & Alpine.js  *(SELESAI)*
+- [x] Komponen dropdown popover pada tombol lonceng di navbar `layouts/app.blade.php`.
+- [x] Badge counter angka dinamis (hilang otomatis jika unread = 0).
+- [x] Tab filter (*Semua* / *Belum Dibaca*), list kartu notifikasi, tombol *Tandai Semua Dibaca*, empty state ramah.
+- [x] Tautan *"Lihat Semua Notifikasi"* menuju `/notifikasi`.
+- [x] Integrasi Alpine.js untuk fetching, polling periodik (30 detik), klik di luar dropdown untuk menutup (*click-away*).
+- [x] Penyesuaian tema gelap & terang.
+- [x] 5 feature test baru di `NotificationUiTest` lulus (total 139 test, 753 assertions lulus).
+
+**DoD:** Interaktivitas dropdown lancar di navbar, counter akurat, responsif multi-breakpoint.
+
+---
+
+### Fase N4 — Integrasi Event Triggers  *(SELESAI)*
+- [x] Trigger notifikasi saat mutasi status Alat (`bermasalah` / `perbaikan`) dan penambahan alat baru.
+- [x] Trigger notifikasi saat status Jadwal (`kendala`) dan penambahan jadwal baru.
+- [x] Trigger notifikasi saat proses Import / Export selesai.
+- [x] Trigger notifikasi saat mutasi hak akses pengguna / user baru.
+- [x] 7 feature test baru di `NotificationTriggerTest` lulus (total 146 test, 784 assertions lulus).
+
+**DoD:** Peristiwa operasional otomatis menciptakan notifikasi untuk user relevan, test lulus.
+
+---
+
+### Fase N5 — Halaman Penuh `/notifikasi`, Dokumentasi & Serah Terima  *(SELESAI)*
+- [x] Halaman penuh riwayat notifikasi `/notifikasi` (filter modul, paginasi, aksi massal).
+- [x] Jalankan seluruh rangkaian test suite (146 tests passed, 784 assertions, 100% passing).
+- [x] Perbarui `README.md` dan `TASK.md`.
+- [x] Laporan serah terima akhir diserahkan.
+
+**DoD:** Seluruh fitur berfungsi penuh, seluruh test lulus, dokumentasi mutakhir.
+
+---
+
+## Bagian D: Pengembangan Halaman About (`/about`)  *(SELESAI)*
+
+- [x] Redesain dari placeholder *"Coming Soon"* menjadi halaman profil operasional profesional penuh (Ide B: Single-Page Clean Scrolling).
+- [x] Hero Section dengan branding Pertamina WK Zona 4, deskripsi platform terintegrasi, dan action button dinamis (tamu vs terotentikasi).
+- [x] Stats strip 4 kartu metrik skala operasional (Rig Termonitor, Struktur Lapangan, Tracking Terintegrasi, Sistem Peringatan Dini).
+- [x] Tiga Pilar Nilai Utama: Keandalan & Integritas Data, Kecepatan Keputusan (Zero Latency), dan Keselamatan & Kepatuhan HSSE.
+- [x] Wilayah Operasional WK Zona 4: 7 kartu lapangan (Prabumulih, Limau, Pendopo, Adera, Ramba, Ogan Komering, Raja/Tempirai) & klasifikasi tipe rig (Rig Drilling vs Workover).
+- [x] 6 Pilar Kapabilitas Sistem: Dashboard, Alat, Lokasi GIS, Jadwal Timeline, Import/Export, dan Notifikasi Terpadu.
+- [x] Tata Kelola Keamanan Enterprise: Otorisasi RBAC, Audit Trail Transparan, dan Proteksi Formula / Enkripsi.
+- [x] Banner Call-to-Action (CTA) interaktif dengan tombol shortcut dashboard atau modal login.
+- [x] Pemutakhiran pengujian otomatis: `PertaminaAuthWorkflowTest` dan `AboutPageTest` (5 test baru, total 151 tests lulus 100%).
+- [x] Verifikasi build aset frontend (`npm run build`).
+
+**DoD:** Halaman About tampil profesional, informatif, responsif multi-breakpoint (dark & light mode), seluruh test lulus.
+
+

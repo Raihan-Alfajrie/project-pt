@@ -7,6 +7,7 @@ use App\Models\DokumentasiItem;
 use App\Models\Jadwal;
 use App\Models\Lokasi;
 use App\Services\AuditLogService;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -137,6 +138,7 @@ class JadwalController extends Controller
         ]);
 
         AuditLogService::log('tambah', 'jadwal', "Menambahkan jadwal operasi: {$jadwal->label}");
+        NotificationService::notifyJadwalCreated($jadwal);
 
         return redirect()->route('jadwal.index')->with('success', 'Item jadwal berhasil ditambahkan.');
     }
@@ -173,6 +175,7 @@ class JadwalController extends Controller
             $lokasiId = $alat?->lokasi_id;
         }
 
+        $oldStatus = $jadwal->status;
         $jadwal->update([
             'alat_id' => $validated['alat_id'],
             'lokasi_id' => $lokasiId,
@@ -183,8 +186,12 @@ class JadwalController extends Controller
             'durasi_bulan' => $validated['durasi_bulan'],
             'catatan' => $validated['catatan'] ?? null,
         ]);
+        $newStatus = $jadwal->status;
 
         AuditLogService::log('edit', 'jadwal', "Memperbarui jadwal operasi: {$jadwal->label}");
+        if ($oldStatus !== $newStatus) {
+            NotificationService::notifyJadwalStatusChanged($jadwal, $oldStatus, $newStatus);
+        }
 
         return redirect()->route('jadwal.index')->with('success', 'Item jadwal berhasil diperbarui.');
     }

@@ -11,6 +11,7 @@ use App\Models\Lokasi;
 use App\Services\AuditLogService;
 use App\Services\ExportService;
 use App\Services\ImportService;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -305,6 +306,13 @@ class ImportExportController extends Controller
         try {
             $result = $importService->executeImport($cached, $mode, auth()->id());
             Cache::forget("impex_preview_{$token}");
+
+            if ($user = auth()->user()) {
+                $successCount = ($result['counts']['inserted'] ?? 0) + ($result['counts']['updated'] ?? 0);
+                $totalCount = count($cached['rows'] ?? []);
+                $status = ($result['counts']['errors'] ?? 0) > 0 ? 'sebagian' : 'sukses';
+                NotificationService::notifyImportCompleted($user, $cached['modul'], $successCount, $totalCount, $status);
+            }
 
             return response()->json([
                 'success' => true,

@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             TargetRkSeeder::class,
             AuditLogSeeder::class,
             FaqSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }

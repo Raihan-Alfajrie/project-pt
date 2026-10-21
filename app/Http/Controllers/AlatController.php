@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Alat;
 use App\Models\Lokasi;
 use App\Services\AuditLogService;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -73,6 +74,7 @@ class AlatController extends Controller
         $alat = Alat::create($validated);
 
         AuditLogService::log('tambah', 'alat', "Menambahkan alat: {$alat->nama} ({$alat->no_seri})");
+        NotificationService::notifyAlatCreated($alat);
 
         return redirect()->route('alat.index')->with('success', 'Data alat berhasil ditambahkan.');
     }
@@ -107,9 +109,14 @@ class AlatController extends Controller
             $validated['foto'] = $request->file('foto')->store('alat_photos', 'public');
         }
 
+        $oldStatus = $alat->status;
         $alat->update($validated);
+        $newStatus = $alat->status;
 
         AuditLogService::log('edit', 'alat', "Memperbarui data alat: {$alat->nama}");
+        if ($oldStatus !== $newStatus) {
+            NotificationService::notifyAlatStatusChanged($alat, $oldStatus, $newStatus);
+        }
 
         return redirect()->route('alat.index')->with('success', 'Data alat berhasil diperbarui.');
     }

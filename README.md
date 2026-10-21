@@ -1,6 +1,6 @@
 # Pertamina Admin Panel — Rig Monitoring WK Zona 4
 
-Platform pemantauan rig pemboran dan kerja ulang (workover) internal untuk wilayah kerja Pertamina Hulu Rokan (PHR) Zona 4. Sistem ini memantau status alat/rig, lokasi lapangan kerja, jadwal operasional sumur, manajemen hak akses pengguna, log audit, dokumentasi legenda warna, serta modul komprehensif **Import & Export Data Excel/CSV**.
+Platform pemantauan rig pemboran dan kerja ulang (workover) internal untuk wilayah kerja Pertamina Hulu Rokan (PHR) Zona 4. Sistem ini memantau status alat/rig, lokasi lapangan kerja, jadwal operasional sumur, manajemen hak akses pengguna, log audit, dokumentasi legenda warna, modul **Import & Export Data Excel/CSV**, serta **Sistem Notifikasi Real-time & Dropdown Navbar**.
 
 ---
 
@@ -9,6 +9,7 @@ Platform pemantauan rig pemboran dan kerja ulang (workover) internal untuk wilay
 - **Backend**: Laravel 13 (PHP 8.2+)
 - **Frontend**: Blade Components + Alpine.js + Tailwind CSS (via Vite)
 - **Spreadsheet Engine**: `phpoffice/phpspreadsheet` (v5.10.0) — Export XLSX, CSV (UTF-8 BOM), Import & Multi-sheet Template Parsing
+- **Notifikasi**: Laravel Database Notifications (Morph relation, polymorphic storage, real-time polling Alpine.js)
 - **Maps**: Leaflet.js (Peta Lapangan WK Zona 4)
 - **Database**: MySQL 8.x / MariaDB (XAMPP compatible) & SQLite (in-memory test suite)
 - **Autentikasi**: Laravel Breeze (Blade Stack) dengan Custom RBAC (Administrator vs Pekerja) & Granular Permission
@@ -57,7 +58,7 @@ DB_PASSWORD=
 > **Catatan**: Buat database bernama `pertamina_rig_dashboard` terlebih dahulu di MySQL (misal via phpMyAdmin di `http://localhost/phpmyadmin`).
 
 ### 4. Migrasi & Seeding Database
-Jalankan migrasi dan seeder untuk membuat 13 tabel lengkap dengan baseline data operasional:
+Jalankan migrasi dan seeder untuk membuat 14 tabel lengkap dengan baseline data operasional dan contoh notifikasi:
 ```bash
 php artisan migrate --seed
 ```
@@ -84,7 +85,7 @@ Database telah diisi 10 user awal dengan kata sandi: `password`
 
 | Nama | Email / Username | Jabatan / Role | Hak Akses Modul |
 | :--- | :--- | :--- | :--- |
-| **Budi Santoso** | `budi.santoso@gmail.com` (`budi.santoso`) | **Administrator** | Akses Penuh (Alat, Lokasi, Jadwal, User, Audit Log, Dokumentasi, Import/Export) |
+| **Budi Santoso** | `budi.santoso@gmail.com` (`budi.santoso`) | **Administrator** | Akses Penuh (Alat, Lokasi, Jadwal, User, Audit Log, Dokumentasi, Import/Export, Notifikasi) |
 | **Siti Rahayu** | `siti.rahayu@gmail.com` (`siti.rahayu`) | **Administrator** | Akses Penuh |
 | **Hendra Gunawan** | `hendra.gunawan@gmail.com` (`hendra.gunawan`) | **Administrator** | Akses Penuh |
 | **Agus Wijaya** | `agus.wijaya@gmail.com` (`agus.wijaya`) | **Pekerja** | Alat: ✅, Lokasi: ❌, Jadwal: ✅ (Import/Export: ❌) |
@@ -105,6 +106,7 @@ Database telah diisi 10 user awal dengan kata sandi: `password`
    - Pencarian live + filter kategori, merek, dan status.
    - CRUD Rig & Alat (Tambah, Edit, Hapus) dengan otorisasi berbasis permission.
    - **Upload Foto Alat**: Dukungan unggah foto fisik rig/alat (JPG, PNG, WEBP hingga 2MB) disimpan di storage publik dengan pratinjau interaktif di tabel dan modal detail.
+   - **Event Trigger Notifikasi**: Otomatis memicu notifikasi saat ada rig/alat baru atau perubahan status menjadi bermasalah.
 
 3. **Modul Lokasi (`/lokasi`)**:
    - Peta Interaktif Leaflet dengan pin custom beranimasi denyut (*pulse*) sesuai status lapangan.
@@ -116,11 +118,13 @@ Database telah diisi 10 user awal dengan kata sandi: `password`
    - 3 Kartu KPI: Total Jadwal, Operasi Berjalan, Selesai.
    - Gantt Chart lengkap 19 bulan dengan penanda garis vertikal *Hari Ini*.
    - Filter lapangan deep-link dan CRUD jadwal operasi.
+   - **Event Trigger Notifikasi**: Otomatis memicu notifikasi saat ada jadwal operasi baru atau jadwal yang mengalami kendala.
 
 5. **Manajemen User & Hak Akses (`/users`)**:
    - Eksklusif untuk Administrator.
    - 2 Kartu KPI: Total User (Admin/Pekerja) dan Status Online/Offline.
    - CRUD Akun Pengguna + Pengaturan Hak Akses per modul (`alat`, `lokasi`, `jadwal`) via toggle switch.
+   - **Event Trigger Notifikasi**: Memberitahu Administrator saat ada user baru terdaftar, dan memberitahu user bersangkutan ketika hak aksesnya diperbarui.
 
 6. **Live Audit Log (`/audit-log`)**:
    - Rekam jejak otomatis secara *real-time* atas mutasi operasional pengguna (Login, Logout, Tambah, Edit, Hapus, Export, Import) pada seluruh modul.
@@ -147,37 +151,55 @@ Database telah diisi 10 user awal dengan kata sandi: `password`
 10. **Modul Import & Export (`/import-export`)** *(Menu ke-12)*:
     - Eksklusif untuk **Administrator** (middleware proteksi admin).
     - **4 Kartu Modul KPI**: Hitungan data live untuk Alat, Lokasi, Jadwal, dan Audit Log dengan indikator badge kesiapan ekspor.
-    - **Ekspor Data (Export)**:
-      - Modul yang didukung: **Alat**, **Lokasi**, **Jadwal**, dan **Audit Log**.
-      - Format berkas: **Excel (`.xlsx`)** dan **CSV (`.csv`)** dengan UTF-8 BOM untuk kompatibilitas penuh dengan Microsoft Excel.
-      - **Formula Injection Neutralization**: Sel berawalan karakter `=`, `+`, `-`, atau `@` dinetralkan secara otomatis dengan prepend `'` demi keamanan saat dibuka di spreadsheet client.
-    - **Impor Data (Import) — 3 Langkah Terstruktur**:
-      - **Langkah 1 (Unduh Template)**: Pembuatan template Excel 2-sheet (`Template` untuk format input baris & `Petunjuk` berisi spesifikasi kolom, aturan enum, format tanggal, dan contoh baris) untuk modul Alat, Lokasi, dan Jadwal.
-      - **Langkah 2 (Unggah Berkas)**: Validasi ketat di server (ekstensi `.xlsx`/`.csv`, MIME valid, batas ukuran maks 5 MB, batas data maks 1.000 baris, parser aman tanpa eksekusi formula/makro).
-      - **Langkah 3 (Pratinjau & Konfirmasi)**:
-        - Tampilan ringkasan status baris via chip berwarna: **Total**, **Baru**, **Perbarui**, **Dilewati**, dan **Error**.
-        - Radio toggle mode penanganan: **Lewati yang duplikat (Skip)** vs **Perbarui yang sudah ada (Update)** — mengganti mode langsung mengkalkulasi ulang status baris secara instan tanpa perlu unggah ulang file.
-        - Tabel pratinjau interaktif (maksimal 500 baris).
-        - **Unduh Laporan Error (`.xlsx`)**: Tombol otomatis muncul bila ada baris tidak valid, menghasilkan berkas Excel berisi baris bermasalah beserta kolom alasan error detail.
-    - **Eksekusi Atomik & Normalisasi Data**:
-      - Seluruh batch import dieksekusi dalam transaksi atomik `DB::transaction()` untuk menjamin konsistensi data.
-      - *Alat*: Insert / Update dengan normalisasi enum status (`aktif`, `standby`, `bermasalah`) dan kategori (`rig`, `alat_pendukung`). Kolom opsional kosong mengosongkan nilai lama (Opsi A disetujui).
-      - *Lokasi*: Penyeragaman kode lapangan ke huruf besar (`strtoupper`) dan otomatisasi pengisian tanggal pemetaan.
-      - *Jadwal*: Pemetaan nama rig ke foreign key `alat_id`, mapping kategori dokumentasi ke `dokumentasi_item`, normalisasi enum status operasional (`selesai`, `progres`, `kendala`), serta konversi format periode bulan (`Mmm-YY` / `YYYY-MM` -> `YYYY-MM-01`).
-    - **Panel Riwayat Aktivitas**:
-      - Menampilkan 50 riwayat aktivitas import dan export terbaru dari tabel `import_export_logs`.
-      - Badge status visual: **Sukses** (hijau), **Sebagian** (kuning), dan **Gagal** (merah).
-      - Format waktu Bahasa Indonesia terstandarisasi (`d M Y, H:i`).
-    - **UX, Keamanan & Aksesibilitas**:
-      - Komponen Toast mengambang responsif (auto-hide 3.6 detik).
-      - Proteksi klik ganda (*double-submit prevention*) pada seluruh tombol aksi.
-      - Navigasi keyboard penuh (`tabindex="0"`, outline fokus merah, handler Enter/Space).
+    - **Ekspor Data (Export)**: Format XLSX dan CSV (UTF-8 BOM), Formula Injection Neutralization (`=, +, -, @`).
+    - **Impor Data (Import)**: Wizard 3 langkah, template 2-sheet, validasi ketat 5MB & 1.000 baris, pratinjau status (Baru, Perbarui, Dilewati, Error), mode skip vs update, unduh laporan error `.xlsx`.
+    - **Eksekusi Atomik & Normalisasi Data**: `DB::transaction()` rollback saat error, normalisasi enum dan relasi Alat, Lokasi, Jadwal.
+    - **Panel Riwayat Aktivitas**: Menampilkan 50 log mutasi import/export terbaru pada tabel `import_export_logs`.
+    - **Event Trigger Notifikasi**: Otomatis mengirimkan notifikasi ringkasan hasil impor data kepada Administrator.
+
+11. **Sistem Notifikasi Terpadu (`/notifikasi` & Popover Navbar)**:
+    - **Ikon Lonceng & Badge Counter Dinamis**:
+      - Terletak pada navbar atas di semua halaman.
+      - Badge counter merah/putih yang menghitung notifikasi belum dibaca secara instan saat render server awal.
+      - Otomatis disembunyikan jika seluruh notifikasi telah dibaca (`unread_count === 0`).
+    - **Popover Dropdown Interaktif**:
+      - Klik tombol lonceng membuka panel dropdown popover yang elegan (lebar 380px) tepat di bawah navbar dengan animasi transisi halus.
+      - **Filter Tabs**: Tab *"Semua"* dan *"Belum Dibaca"* dengan indikator jumlah unread.
+      - **Tandai Semua Dibaca Cepat**: Tombol satu-klik pada header untuk menandai semua notifikasi sudah dibaca secara instan.
+      - **Daftar Kartu Notifikasi**: Ikon tematik per modul (`danger`, `warning`, `success`, `info`), indikator titik dot belum dibaca, teks pesan ringkas, dan format waktu relatif Bahasa Indonesia.
+      - Klik pada item notifikasi otomatis menandai dibaca dan mengarahkan pengguna ke halaman terkait.
+      - **Empty State**: Ilustrasi ramah saat tidak ada notifikasi.
+    - **Polling Latar Belakang**: Polling AJAX ringan setiap 30 detik via Fetch API & Alpine.js untuk memperbarui badge unread count tanpa perlu refresh halaman.
+    - **Halaman Penuh Riwayat Notifikasi (`/notifikasi`)**:
+      - Tampilan terstruktur untuk meninjau seluruh riwayat notifikasi pengguna.
+      - Filter ganda: berdasarkan status (*Semua*, *Belum Dibaca*) dan berdasarkan modul (*Semua Modul*, *Alat*, *Jadwal*, *Import/Export*, *User*).
+      - Tombol aksi massal *"Tandai Semua Sudah Dibaca"* dan navigasi paginasi.
+    - **Event Triggers Otomatis & Relevansi Hak Akses (RBAC)**:
+      - *Alat & Rig*: Notifikasi penambahan alat baru & peringatan rig bermasalah (dikirim ke Admin & Pekerja yang berhak atas modul `alat`).
+      - *Jadwal Operasi*: Notifikasi jadwal baru & kendala operasi tajak (dikirim ke Admin & Pekerja yang berhak atas modul `jadwal`).
+      - *Import / Export*: Notifikasi keberhasilan impor batch data massal ke Administrator.
+      - *Pengguna*: Notifikasi registrasi user baru ke Admin, dan notifikasi mutasi hak akses ke user bersangkutan.
 
 ---
 
-## 🗄️ Struktur Tabel Riwayat (`import_export_logs`)
+## 🗄️ Struktur Tabel Sistem Notifikasi (`notifications`)
 
-Tabel `import_export_logs` mencatat seluruh mutasi ekspor dan impor data:
+Tabel `notifications` menggunakan skema resmi polymorphic database notification Laravel:
+
+| Kolom | Tipe Data | Deskripsi |
+| :--- | :--- | :--- |
+| `id` | `uuid (PK)` | Identifikator unik format UUID |
+| `type` | `varchar(255)` | Kelas notifikasi (`App\Notifications\SystemNotification`) |
+| `notifiable_type` | `varchar(255)` | Model target relasi (`App\Models\User`) |
+| `notifiable_id` | `bigint unsigned` | ID pengguna penerima notifikasi (`users.id`) |
+| `data` | `text` | Payload JSON: `judul`, `pesan`, `modul`, `tipe`, `url`, `icon` |
+| `read_at` | `timestamp (nullable, indexed)` | Waktu notifikasi dibaca (NULL = belum dibaca) |
+| `created_at` | `timestamp` | Waktu notifikasi dibuat |
+| `updated_at` | `timestamp` | Waktu pembaharuan data |
+
+---
+
+## 🗄️ Struktur Tabel Riwayat Import/Export (`import_export_logs`)
 
 | Kolom | Tipe Data | Deskripsi |
 | :--- | :--- | :--- |
@@ -204,8 +226,8 @@ Tabel `import_export_logs` mencatat seluruh mutasi ekspor dan impor data:
 | **Ukuran Berkas Unggahan** | Maksimal 5 MB | Divalidasi di sisi server (HTTP 422 bila melebihi batas) |
 | **Maksimal Baris Impor** | 1.000 baris | Perlindungan beban memori server |
 | **Maksimal Pratinjau UI** | 500 baris | Menjaga performa perenderan DOM di browser |
-| **Masa Aktif Token Pratinjau**| 2 Jam | Disimpan dalam cache sistem (`impex_preview_{token}`) |
-| **Batas Riwayat Tampilan** | 50 entri terbaru | Menampilkan data terbaru secara terurut menurun |
+| **Tampilan Dropdown Notifikasi** | 8 item terbaru | Disertai scrolling halus dan link ke halaman penuh |
+| **Interval Polling Notifikasi** | 30 Detik | Request ringan ke `/notifications/unread-count` |
 | **Formula Protection** | Prefix `'` pada `=, +, -, @` | Mencegah eksekusi spreadsheet formula injection |
 
 ---
@@ -217,35 +239,43 @@ Tabel `import_export_logs` mencatat seluruh mutasi ekspor dan impor data:
 3. **Kebijakan Nilai Kosong pada Mode Update**: **Opsi A Disetujui** — nilai kosong pada kolom opsional di file Excel akan menimpa/mengosongkan data lama di database.
 4. **Format Tanggal Jadwal Operasi**: Fleksibel mendukung format `Mmm-YY` (misal: `Jun-26`, `Jul-26`) serta `YYYY-MM` dalam rentang waktu yang didukung (Juni 2026 s/d Desember 2027).
 5. **Keamanan Formula**: Netralisasi otomatis karakter formula injection saat ekspor data.
-6. **Driver Database Pengujian**: Menggunakan SQLite in-memory untuk kecepatan dan isolasi test suite, serta MySQL untuk lingkungan produksi XAMPP.
+6. **Sistem Notifikasi**: Memanfaatkan tabel `notifications` standar dengan relasi polymorphic, unread count badge, Alpine.js dropdown, dan granular event triggers.
 
 ---
 
 ## 🔮 Rekomendasi Pengembangan Lanjutan (Future Work)
 
 Berikut adalah saran perbaikan di masa depan (tidak mengikat tahap ini):
-1. **Background Queue / Job Workers**: Jika kebutuhan dataset meningkat hingga lebih dari 5.000 baris, implementasikan pemrosesan asynchronous via Laravel Queue (`database` / `redis`) disertai progress bar real-time (SSE atau WebSockets).
-2. **Automated Scheduled Export**: Konfigurasi `php artisan schedule:run` untuk menghasilkan cadangan data berkala (misal ekspor otomatis Audit Log mingguan ke storage terproteksi).
-3. **Template & Impor Modul Tambahan**: Menyediakan template dan mekanisme impor untuk master data Dokumentasi Legenda atau FAQ jika diperlukan input massal oleh tim admin.
+1. **Background Queue / Job Workers**: Jika kebutuhan dataset impor meningkat hingga lebih dari 5.000 baris, implementasikan pemrosesan asynchronous via Laravel Queue (`database` / `redis`) disertai progress bar real-time.
+2. **Web Push / Browser Desktop Notifications**: Mengintegrasikan browser Service Worker Notification API agar pengguna tetap menerima alert pop-up desktop saat browser berada di latar belakang.
+3. **Automated Scheduled Export**: Konfigurasi `php artisan schedule:run` untuk menghasilkan cadangan data berkala (misal ekspor otomatis Audit Log mingguan ke storage terproteksi).
 
 ---
 
 ## 🧪 Pengujian Otomatis (Automated Testing)
 
-Seluruh modul, live audit logging, upload file, FAQ dinamis, RBAC, dan fitur Import/Export telah dilengkapi feature test komprehensif:
+Seluruh modul, live audit logging, upload file, FAQ dinamis, RBAC, fitur Import/Export, Sistem Notifikasi, dan Halaman Profil/About telah dilengkapi feature test komprehensif:
 
 ```bash
 php artisan test
 ```
 
-Hasil pengujian terkini: **117 tests passed (644 assertions, 100% passing)**.
+Hasil pengujian terkini: **151 tests passed (813 assertions, 100% passing)**.
 
 ### Rincian Test Suite:
 - **Modul Tahap 1 Baseline**: 82 tests (382 assertions)
   - `AuthenticationTest`, `DashboardTest`, `AlatTest`, `LokasiTest`, `JadwalTest`, `UserManagementTest`, `AuditLogTest`, `DokumentasiTest`, `FaqTest`, `ProfileTest`.
-- **Modul Tahap 2 (Import / Export)**: 35 tests baru (262 assertions baru)
-  - `ImportExportFoundationTest` (6 tests): Otorisasi admin vs pekerja, routing `/import-export`, relasi model `ImportExportLog`, dan seeder.
-  - `ExportDataTest` (6 tests): Ekspor format XLSX/CSV untuk 4 modul, filter live count, dan proteksi formula injection.
-  - `ImportPreviewTest` (8 tests): Generator template 2-sheet, validasi upload file aman, parsing & pratinjau status (Baru, Perbarui, Dilewati, Error), serta pembuatan laporan error XLSX.
-  - `ImportConfirmTest` (9 tests): Transaksi atomik `DB::transaction()`, mode skip vs update, normalisasi Alat/Lokasi/Jadwal, pencatatan log riwayat & live audit log.
-  - `ImportExportUiAndHistoryTest` (6 tests): Aksesibilitas keyboard, proteksi klik ganda, formatting waktu lokal Indonesia, badge visual, dan sinkronisasi tampilan riwayat.
+- **Modul Tahap 2 (Import / Export)**: 35 tests (262 assertions)
+  - `ImportExportFoundationTest` (6 tests)
+  - `ExportDataTest` (6 tests)
+  - `ImportPreviewTest` (8 tests)
+  - `ImportConfirmTest` (9 tests)
+  - `ImportExportUiAndHistoryTest` (6 tests)
+- **Modul Notifikasi Terintegrasi (Fase N1 - N5)**: 29 tests (140 assertions)
+  - `NotificationFoundationTest` (7 tests): Skema tabel, model kustom, accessors, scopes, dan seeder.
+  - `NotificationApiTest` (10 tests): Otentikasi, isolasi per user, filter unread, unread-count endpoint, mark as read, mark all as read, dan delete.
+  - `NotificationUiTest` (5 tests): Render navbar bell button, badge counter unread, popover dropdown, render halaman penuh `/notifikasi`, dan filter.
+  - `NotificationTriggerTest` (7 tests): Event trigger saat penambahan/perubahan status Alat, Jadwal, Import massal, dan mutasi permissions user.
+- **Modul Halaman About (Pengembangan Lanjutan)**: 5 tests baru (29 assertions baru)
+  - `AboutPageTest` (5 tests): Aksesibilitas publik/tamu, navigasi shortcut user terotentikasi, perenderan 7 lapangan WK Zona 4, 6 pilar kapabilitas sistem, dan standar keamanan tata kelola.
+

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\UserPermission;
 use App\Services\AuditLogService;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -100,6 +101,7 @@ class UserController extends Controller
         }
 
         AuditLogService::log('tambah', 'user', "Menambahkan akun user: {$newUser->nama} (@{$newUser->username})");
+        NotificationService::notifyUserRegistered($newUser);
 
         return redirect()->route('users.index')->with('success', "User {$newUser->nama} (@{$newUser->username}) berhasil ditambahkan.");
     }
@@ -155,6 +157,7 @@ class UserController extends Controller
         }
 
         AuditLogService::log('edit', 'user', "Memperbarui hak akses modul user: {$user->nama}");
+        NotificationService::notifyUserPermissionsUpdated($user);
 
         return redirect()->route('users.index')->with('success', "Hak akses untuk {$user->nama} berhasil diperbarui.");
     }

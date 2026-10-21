@@ -20,12 +20,14 @@ class PertaminaAuthWorkflowTest extends TestCase
         $response->assertSee('Kode Lapangan');
     }
 
-    public function test_about_page_loads_with_coming_soon(): void
+    public function test_about_page_loads_successfully(): void
     {
         $response = $this->get('/about');
         $response->assertStatus(200);
-        $response->assertSee('Coming Soon');
-        $response->assertSee('Halaman About sedang disiapkan');
+        $response->assertSee('Platform Monitoring Terintegrasi');
+        $response->assertSee('Wilayah Kerja Zona 4');
+        $response->assertSee('Prabumulih Field');
+        $response->assertSee('Limau Field');
     }
 
     public function test_user_can_login_with_email_and_redirects_to_dashboard(): void
