@@ -538,16 +538,24 @@
             attributionControl: true
         }).setView([-3.45, 104.1], 9);
 
-        // CartoDB tile layer with theme detection
-        const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const tileLayerUrl = isDark
-            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-            : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+        // Esri ArcGIS Canvas tile layer with theme detection (No API key required)
+        const isDark = !window.matchMedia || !window.matchMedia('(prefers-color-scheme: light)').matches;
+        const tileBaseUrl = isDark
+            ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+            : 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
 
-        L.tileLayer(tileLayerUrl, {
-            attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            maxZoom: 18,
-            subdomains: 'abcd'
+        const tileRefUrl = isDark
+            ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}'
+            : 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}';
+
+        L.tileLayer(tileBaseUrl, {
+            attribution: '&copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a> &mdash; Esri, DeLorme, NAVTEQ',
+            maxZoom: 16
+        }).addTo(map);
+
+        L.tileLayer(tileRefUrl, {
+            attribution: '',
+            maxZoom: 16
         }).addTo(map);
 
         const markers = {};
