@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Pertamina Admin Panel — ' . ($pageTitle ?? 'Dashboard') }}</title>
+    <link rel="icon" type="image/webp" href="{{ asset('logo_pertamina.webp') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -53,8 +54,8 @@
             padding-top: env(safe-area-inset-top, 0px); position: sticky; top: 0; z-index: 30;
         }
         .logo-block { width: var(--sidebar-w); flex: 0 0 auto; display: flex; align-items: center; gap: 11px; padding: 14px 18px; }
-        .logo-block .mark { width: 36px; height: 36px; border-radius: 10px; background: #fff; display: flex; align-items: center; justify-content: center; }
-        .logo-block .mark svg { width: 20px; height: 20px; }
+        .logo-block .mark { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; text-decoration: none; flex-shrink: 0; }
+        .logo-block .mark img { width: 36px; height: 36px; object-fit: contain; display: block; border-radius: 9px; }
         .logo-block .name { font-weight: 700; font-size: 15px; line-height: 1.15; }
         .logo-block .sub { font-size: 11px; opacity: .85; }
         .collapse-btn { margin-left: auto; width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.12); cursor: pointer; flex: 0 0 auto; border: 0; color: #fff; }
@@ -211,7 +212,7 @@
     <header class="topbar">
         <div class="logo-block">
             <a href="{{ route('dashboard') }}" class="mark" aria-label="Logo Pertamina">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ea2027"/><path d="M12 5c2 3 4 4.5 4 7.5A4 4 0 0112 17a4 4 0 01-4-4.5C8 9.5 10 8 12 5z" fill="#fff"/></svg>
+                <img src="{{ asset('logo_pertamina.webp') }}" alt="Logo Pertamina" width="36" height="36">
             </a>
             <div>
                 <div class="name">Pertamina</div>

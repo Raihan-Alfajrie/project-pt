@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Pertamina Admin Panel — Rig Monitoring Zona 4' }}</title>
+    <link rel="icon" type="image/webp" href="{{ asset('logo_pertamina.webp') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -43,7 +44,8 @@
         .topbar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; padding-top: calc(16px + env(safe-area-inset-top,0px)); background: rgba(21,17,19,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-soft); }
         @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .topbar { background: rgba(245,243,241,.85); } }
         .brand { display: flex; align-items: center; gap: 10px; }
-        .brand .mark { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(155deg, var(--red), var(--red-strong)); display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 4px 14px rgba(234,32,39,.35); }
+        .brand .mark { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .brand .mark img { width: 34px; height: 34px; object-fit: contain; display: block; border-radius: 8px; }
         .brand .name { font-weight: 700; font-size: 14.5px; line-height: 1.15; }
         .brand .sub { font-size: 10.5px; color: var(--text-faint); }
         .pubnav { display: flex; align-items: center; gap: 26px; }
@@ -90,7 +92,9 @@
 
     <div class="topbar">
         <a href="{{ route('home') }}" class="brand">
-            <div class="mark">🛢️</div>
+            <div class="mark">
+                <img src="{{ asset('logo_pertamina.webp') }}" alt="Logo Pertamina" width="34" height="34">
+            </div>
             <div>
                 <div class="name">Pertamina</div>
                 <div class="sub">Rig Monitoring Zona 4</div>
