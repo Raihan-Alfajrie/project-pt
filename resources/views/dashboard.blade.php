@@ -195,7 +195,7 @@
 
     <div class="gantt-wrap">
         <div class="gantt-scroll">
-            <div class="gantt" id="ganttGrid">
+            <div class="gantt" id="ganttGrid" style="grid-template-columns: 190px repeat({{ count($months) }}, 92px) 74px 74px;">
                 <!-- Header -->
                 <div class="g-head">
                     <div class="corner">Rig</div>
@@ -214,8 +214,8 @@
                             <div class="num">Rig {{ $rig['no'] }}</div>
                         </div>
 
-                        @for ($i = 0; $i < 19; $i++)
-                            <div class="g-cell {{ $i === 1 ? 'now-col' : '' }}" data-col-index="{{ $i }}">
+                        @foreach ($months as $i => $m)
+                            <div class="g-cell {{ $m['is_now'] ? 'now-col' : '' }}" data-col-index="{{ $i }}">
                                 @foreach ($rig['blocks'] as $block)
                                     @if ($block['startIndex'] == $i)
                                         <div class="block {{ $block['isDark'] ? 'dark' : '' }}"
@@ -232,7 +232,7 @@
                                     @endif
                                 @endforeach
                             </div>
-                        @endfor
+                        @endforeach
 
                         <div class="g-plan plan">{{ $rig['plan'] }}</div>
                         <div class="g-plan prognose">{{ $rig['prognose'] }}</div>

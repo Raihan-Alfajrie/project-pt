@@ -160,4 +160,66 @@ class JadwalTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Lapangan: MJ ✕');
     }
+
+    public function test_user_can_create_jadwal_with_month_and_year_beyond_2027_and_timeline_expands(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = User::find(4);
+        $rig = Alat::where('kategori', 'rig')->first();
+        $kategori = DokumentasiItem::first();
+
+        // Create schedule in July 2028 for 5 months
+        $response = $this->actingAs($user)->post('/jadwal', [
+            'alat_id' => $rig->id,
+            'label' => 'FUTURE-RIG-2028',
+            'kategori_id' => $kategori->id,
+            'status' => 'progres',
+            'bulan' => 7,
+            'tahun' => 2028,
+            'durasi_bulan' => 5,
+            'catatan' => 'Jadwal jangka panjang tahun 2028.',
+        ]);
+
+        $response->assertRedirect('/jadwal');
+        $this->assertDatabaseHas('jadwal', [
+            'label' => 'FUTURE-RIG-2028',
+            'alat_id' => $rig->id,
+            'durasi_bulan' => 5,
+        ]);
+
+        $created = Jadwal::where('label', 'FUTURE-RIG-2028')->first();
+        $this->assertNotNull($created);
+        $this->assertEquals('2028-07-01', $created->periode_mulai->format('Y-m-d'));
+
+        // Check Jadwal page has the extended timeline
+        $jadwalPage = $this->actingAs($user)->get('/jadwal');
+        $jadwalPage->assertStatus(200);
+        $jadwalPage->assertSee('Jul-28');
+        $jadwalPage->assertSee('Nov-28');
+        $jadwalPage->assertSee('Dec-28');
+
+        // Check Dashboard page also has the extended timeline
+        $dashboardPage = $this->actingAs($user)->get('/dashboard');
+        $dashboardPage->assertStatus(200);
+        $dashboardPage->assertSee('Jul-28');
+        $dashboardPage->assertSee('Dec-28');
+    }
+
+    public function test_now_col_matches_current_month(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $user = User::find(4);
+        $currentMonthLabel = \Carbon\Carbon::now()->format('M-y');
+
+        $jadwalPage = $this->actingAs($user)->get('/jadwal');
+        $jadwalPage->assertStatus(200);
+        $jadwalPage->assertSee($currentMonthLabel);
+
+        $dashboardPage = $this->actingAs($user)->get('/dashboard');
+        $dashboardPage->assertStatus(200);
+        $dashboardPage->assertSee($currentMonthLabel);
+    }
 }
+

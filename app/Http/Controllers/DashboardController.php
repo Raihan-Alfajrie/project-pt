@@ -26,16 +26,40 @@ class DashboardController extends Controller
         // 2. Target RK
         $targetRk = TargetRk::where('tahun', 2026)->first() ?? TargetRk::first();
 
-        // 3. 19 Months Gantt Range: Jun-2026 to Dec-2027
+        // 3. Gantt Range: Jun-2026 to Dec-2027 (expanded dynamically if needed)
         $startDate = Carbon::create(2026, 6, 1);
+        $minMonths = 19;
+
+        $now = Carbon::now();
+        $diffNow = ($now->year - $startDate->year) * 12 + ($now->month - $startDate->month) + 1;
+        if ($diffNow > $minMonths) {
+            $minMonths = $diffNow;
+        }
+
+        $maxJadwal = Jadwal::max('periode_mulai');
+        if ($maxJadwal) {
+            $maxCarbon = Carbon::parse($maxJadwal);
+            $diffMax = ($maxCarbon->year - $startDate->year) * 12 + ($maxCarbon->month - $startDate->month) + 1;
+            if ($diffMax > $minMonths) {
+                $minMonths = $diffMax;
+            }
+        }
+
+        $lastDate = $startDate->copy()->addMonths($minMonths - 1);
+        if ($lastDate->month < 12) {
+            $minMonths += (12 - $lastDate->month);
+        }
+
+        $nowKey = $now->format('Y-m');
         $months = [];
-        for ($i = 0; $i < 19; $i++) {
+        for ($i = 0; $i < $minMonths; $i++) {
             $currentMonth = $startDate->copy()->addMonths($i);
+            $key = $currentMonth->format('Y-m');
             $months[] = [
                 'index' => $i,
-                'key' => $currentMonth->format('Y-m'),
+                'key' => $key,
                 'label' => $currentMonth->format('M-y'),
-                'is_now' => ($i === 1), // Jul-26 is now-col
+                'is_now' => ($key === $nowKey),
             ];
         }
 

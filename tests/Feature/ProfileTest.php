@@ -40,6 +40,10 @@ class ProfileTest extends TestCase
         $response->assertSee('Perangkat &amp; Aplikasi Terhubung', false);
         $response->assertSee('Budi Sudarsono');
         $response->assertSee('BS');
+        $response->assertSee('margin: 0 auto', false);
+        $response->assertSee('Pengaturan akun &amp; sesi aktif', false);
+        $response->assertSee('id="btnLogout"', false);
+        $response->assertSee('Logout');
     }
 
     public function test_profile_information_can_be_updated_with_nama(): void

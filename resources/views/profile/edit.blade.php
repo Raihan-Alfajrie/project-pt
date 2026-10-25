@@ -1,4 +1,4 @@
-<x-app-layout :title="'Pertamina Admin Panel — Profil'" pageTitle="Profil" pageDesc="Pengaturan akun &amp; sesi aktif">
+<x-app-layout :title="'Pertamina Admin Panel — Profil'" pageTitle="Profil" pageDesc="Pengaturan akun & sesi aktif">
     <x-slot name="pageIcon">
         <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.8-4.2 5.4-6.4 7.5-6.4s5.7 2.2 7.5 6.4"/></svg>
     </x-slot>
@@ -17,7 +17,11 @@
         .profile-id .email { font-size: 12.5px; color: var(--text-faint); margin-top: 3px; }
         .verified-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--green, #4ade80); background: rgba(74,222,128,.14); padding: 4px 10px; border-radius: 99px; margin-top: 8px; }
         .verified-badge svg { width: 11px; height: 11px; }
-        .btn-edit { display: flex; align-items: center; gap: 7px; background: var(--panel-2); border: 1px solid var(--border-soft); color: var(--text); font-size: 12.5px; font-weight: 700; padding: 9px 15px; border-radius: 9px; cursor: pointer; font-family: inherit; transition: all .15s; }
+        .profile-actions { display: flex; flex-direction: column; gap: 8px; min-width: 125px; }
+        .btn-logout { display: flex; align-items: center; justify-content: center; gap: 7px; background: rgba(234,32,39,.12); border: 1px solid rgba(234,32,39,.35); color: #ff6b6f; font-size: 12.5px; font-weight: 700; padding: 8px 15px; border-radius: 9px; cursor: pointer; font-family: inherit; transition: all .15s; width: 100%; text-decoration: none; }
+        .btn-logout:hover { background: var(--red); border-color: var(--red); color: #fff; }
+        .btn-logout svg { width: 14px; height: 14px; }
+        .btn-edit { display: flex; align-items: center; justify-content: center; gap: 7px; background: var(--panel-2); border: 1px solid var(--border-soft); color: var(--text); font-size: 12.5px; font-weight: 700; padding: 8px 15px; border-radius: 9px; cursor: pointer; font-family: inherit; transition: all .15s; width: 100%; }
         .btn-edit:hover { border-color: var(--red); color: #fff; }
         .btn-edit svg { width: 14px; height: 14px; }
 
@@ -74,25 +78,24 @@
     </style>
     @endpush
 
-    <!-- Flash message -->
-    @if (session('success'))
-        <div class="flash-alert" id="flashSuccess">
-            <span>{{ session('success') }}</span>
-            <span style="cursor:pointer;" onclick="this.parentElement.remove()">✕</span>
-        </div>
-    @endif
-    @if ($errors->any())
-        <div class="flash-alert error">
-            <div>
-                @foreach ($errors->all() as $err)
-                    <div>{{ $err }}</div>
-                @endforeach
+    <div style="width: 100%; max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;">
+        <!-- Flash message -->
+        @if (session('success'))
+            <div class="flash-alert" id="flashSuccess">
+                <span>{{ session('success') }}</span>
+                <span style="cursor:pointer;" onclick="this.parentElement.remove()">✕</span>
             </div>
-            <span style="cursor:pointer;" onclick="this.parentElement.remove()">✕</span>
-        </div>
-    @endif
-
-    <div style="display:flex; flex-direction:column; gap:16px; max-width:900px;">
+        @endif
+        @if ($errors->any())
+            <div class="flash-alert error">
+                <div>
+                    @foreach ($errors->all() as $err)
+                        <div>{{ $err }}</div>
+                    @endforeach
+                </div>
+                <span style="cursor:pointer;" onclick="this.parentElement.remove()">✕</span>
+            </div>
+        @endif
         <!-- Panel Profil Akun -->
         <div class="panel">
             <h2>Profil Akun</h2>
@@ -115,10 +118,19 @@
                         </div>
                     </div>
                 </div>
-                <button class="btn-edit" id="btnEdit">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
-                    Edit Profil
-                </button>
+                <div class="profile-actions">
+                    <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                        @csrf
+                        <button type="submit" class="btn-logout" id="btnLogout">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Logout
+                        </button>
+                    </form>
+                    <button class="btn-edit" id="btnEdit" type="button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
+                        Edit Profil
+                    </button>
+                </div>
             </div>
         </div>
 

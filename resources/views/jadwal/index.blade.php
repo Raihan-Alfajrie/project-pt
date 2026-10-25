@@ -250,15 +250,37 @@
                             </div>
                             <div class="field">
                                 <label>Bulan Mulai <span class="req">*</span></label>
-                                <select id="fBulan" name="bulan_index" required>
-                                    @foreach ($months as $idx => $m)
-                                        <option value="{{ $idx }}">{{ $m }}</option>
-                                    @endforeach
-                                </select>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <select id="fBulan" name="bulan" required>
+                                        <option value="1">Januari (Jan)</option>
+                                        <option value="2">Februari (Feb)</option>
+                                        <option value="3">Maret (Mar)</option>
+                                        <option value="4">April (Apr)</option>
+                                        <option value="5">Mei (May)</option>
+                                        <option value="6">Juni (Jun)</option>
+                                        <option value="7">Juli (Jul)</option>
+                                        <option value="8">Agustus (Aug)</option>
+                                        <option value="9">September (Sep)</option>
+                                        <option value="10">Oktober (Oct)</option>
+                                        <option value="11">November (Nov)</option>
+                                        <option value="12">Desember (Dec)</option>
+                                    </select>
+                                    <select id="fTahun" name="tahun" required>
+                                        @php
+                                            $currYear = (int) date('Y');
+                                            $startYear = min(2024, $currYear - 2);
+                                            $endYear = max(2035, $currYear + 10);
+                                        @endphp
+                                        @for ($y = $startYear; $y <= $endYear; $y++)
+                                            <option value="{{ $y }}">{{ $y }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <input type="hidden" id="fBulanIndex" name="bulan_index" value="0">
                             </div>
                             <div class="field">
                                 <label>Durasi (bulan) <span class="req">*</span></label>
-                                <input id="fDurasi" name="durasi_bulan" type="number" min="1" max="19" value="1" required>
+                                <input id="fDurasi" name="durasi_bulan" type="number" min="1" max="60" value="1" required>
                             </div>
                             <div class="field full">
                                 <label>Lokasi Lapangan</label>
@@ -358,7 +380,7 @@
     @push('scripts')
     <script>
         const MONTHS = @json($months);
-        const NOW_COL = 1; // Jul-26
+        const NOW_COL = @json($nowColIndex);
 
         // Rigs array
         const RIGS = @json($rigsData, JSON_UNESCAPED_SLASHES);
@@ -569,8 +591,10 @@
             chip.innerHTML = `<span class="status-chip ${it.status}"><span class="d"></span>${statusLabel(it.status)}</span>`;
 
             document.getElementById('dKategori').textContent = it.kategori_nama;
-            const endIdx = Math.min(it.s + it.n - 1, MONTHS.length - 1);
-            document.getElementById('dPeriode').textContent = `${MONTHS[it.s]} — ${MONTHS[endIdx]} (${it.n} bulan)`;
+            const endIdx = it.s + it.n - 1;
+            const startLabel = MONTHS[it.s] || 'Mulai ' + (it.periode_mulai || `Bulan ${it.s + 1}`);
+            const endLabel = MONTHS[endIdx] || `Bulan ${endIdx + 1}`;
+            document.getElementById('dPeriode').textContent = `${startLabel} — ${endLabel} (${it.n} bulan)`;
 
             const lokasiText = it.lokasi_kode 
                 ? `${it.lokasi_kode} — ${it.lokasi_nama || 'Lapangan Operasional'}`
@@ -599,6 +623,19 @@
         }
 
         @if ($canManage)
+        function syncBulanIndex() {
+            const b = parseInt(document.getElementById('fBulan')?.value, 10) || 6;
+            const y = parseInt(document.getElementById('fTahun')?.value, 10) || 2026;
+            const idx = (y - 2026) * 12 + b - 6;
+            const el = document.getElementById('fBulanIndex');
+            if (el) el.value = String(Math.max(0, idx));
+        }
+
+        const elBulan = document.getElementById('fBulan');
+        const elTahun = document.getElementById('fTahun');
+        if (elBulan) elBulan.addEventListener('change', syncBulanIndex);
+        if (elTahun) elTahun.addEventListener('change', syncBulanIndex);
+
         // Add & Edit Modals
         const btnAdd = document.getElementById('btnAdd');
         if (btnAdd) {
@@ -608,10 +645,13 @@
                 document.getElementById('formMethod').value = "POST";
                 document.getElementById('formTitle').textContent = "Tambah Jadwal";
 
+                const now = new Date();
                 if (RIGS.length > 0) document.getElementById('fRig').value = RIGS[0].id;
                 document.getElementById('fLabel').value = "";
                 document.getElementById('fStatus').value = "progres";
-                document.getElementById('fBulan').value = "0";
+                document.getElementById('fBulan').value = String(now.getMonth() + 1);
+                document.getElementById('fTahun').value = String(now.getFullYear());
+                syncBulanIndex();
                 document.getElementById('fDurasi').value = "1";
                 document.getElementById('fLokasi').value = "";
                 document.getElementById('fCatatan').value = "";
@@ -633,7 +673,22 @@
             document.getElementById('fLabel').value = it.label;
             document.getElementById('fKategori').value = it.kategori_id;
             document.getElementById('fStatus').value = it.status;
-            document.getElementById('fBulan').value = String(it.s);
+
+            if (it.bulan && it.tahun) {
+                document.getElementById('fBulan').value = String(it.bulan);
+                document.getElementById('fTahun').value = String(it.tahun);
+            } else if (it.periode_mulai) {
+                const parts = it.periode_mulai.split('-');
+                document.getElementById('fTahun').value = String(parseInt(parts[0], 10));
+                document.getElementById('fBulan').value = String(parseInt(parts[1], 10));
+            } else {
+                const yr = 2026 + Math.floor((it.s + 5) / 12);
+                const mo = ((it.s + 5) % 12) + 1;
+                document.getElementById('fTahun').value = String(yr);
+                document.getElementById('fBulan').value = String(mo);
+            }
+            syncBulanIndex();
+
             document.getElementById('fDurasi').value = it.n;
             document.getElementById('fLokasi').value = it.lokasi_id || "";
             document.getElementById('fCatatan').value = it.catatan || "";
