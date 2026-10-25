@@ -15,13 +15,46 @@ use Illuminate\View\View;
 class JadwalController extends Controller
 {
     /**
-     * Timeline months from Jun 2026 to Dec 2027 (19 months).
+     * Build dynamic timeline months array from Jun 2026 up to max schedule end date / current date.
      */
-    protected array $months = [
-        'Jun-26', 'Jul-26', 'Aug-26', 'Sep-26', 'Oct-26', 'Nov-26', 'Dec-26',
-        'Jan-27', 'Feb-27', 'Mar-27', 'Apr-27', 'May-27', 'Jun-27', 'Jul-27',
-        'Aug-27', 'Sep-27', 'Oct-27', 'Nov-27', 'Dec-27'
-    ];
+    protected function buildTimelineMonths($jadwals = null): array
+    {
+        $startDate = \Carbon\Carbon::create(2026, 6, 1);
+        $minMonths = 19; // baseline 19 months: Jun-26 s/d Dec-27
+
+        // Check current date
+        $now = \Carbon\Carbon::now();
+        $diffNow = ($now->year - $startDate->year) * 12 + ($now->month - $startDate->month) + 1;
+        if ($diffNow > $minMonths) {
+            $minMonths = $diffNow;
+        }
+
+        // Check max schedule date
+        if ($jadwals) {
+            foreach ($jadwals as $j) {
+                if ($j->periode_mulai) {
+                    $itemEnd = $j->periode_mulai->copy()->addMonths(max(1, $j->durasi_bulan) - 1);
+                    $diffEnd = ($itemEnd->year - $startDate->year) * 12 + ($itemEnd->month - $startDate->month) + 1;
+                    if ($diffEnd > $minMonths) {
+                        $minMonths = $diffEnd;
+                    }
+                }
+            }
+        }
+
+        // Round up to end of year (December)
+        $lastDate = $startDate->copy()->addMonths($minMonths - 1);
+        if ($lastDate->month < 12) {
+            $minMonths += (12 - $lastDate->month);
+        }
+
+        $months = [];
+        for ($i = 0; $i < $minMonths; $i++) {
+            $months[] = $startDate->copy()->addMonths($i)->format('M-y');
+        }
+
+        return $months;
+    }
 
     /**
      * Display the Jadwal Gantt view and status KPIs.
@@ -48,8 +81,15 @@ class JadwalController extends Controller
         $kategoris = DokumentasiItem::orderBy('urutan')->get();
         $lokasis = Lokasi::orderBy('kode')->get();
 
-        $months = $this->months;
+        $months = $this->buildTimelineMonths($jadwals);
         $activeKode = $request->query('kode');
+
+        // Dynamic current month index
+        $nowLabel = \Carbon\Carbon::now()->format('M-y');
+        $nowColIndex = array_search($nowLabel, $months);
+        if ($nowColIndex === false) {
+            $nowColIndex = -1;
+        }
 
         $rigsData = $rigs->map(fn($r) => [
             'id' => $r->id,
@@ -73,7 +113,10 @@ class JadwalController extends Controller
             's' => $j->bulan_mulai_index,
             'n' => $j->durasi_bulan,
             'status' => $j->status,
-            'catatan' => $j->catatan ?? ''
+            'catatan' => $j->catatan ?? '',
+            'periode_mulai' => $j->periode_mulai?->format('Y-m-d') ?? '',
+            'tahun' => $j->periode_mulai?->year ?? 2026,
+            'bulan' => $j->periode_mulai?->month ?? 6,
         ]);
 
         return view('jadwal.index', compact(
@@ -88,7 +131,8 @@ class JadwalController extends Controller
             'canManage',
             'activeKode',
             'rigsData',
-            'jadwalsData'
+            'jadwalsData',
+            'nowColIndex'
         ));
     }
 
@@ -107,17 +151,28 @@ class JadwalController extends Controller
             'label' => ['required', 'string', 'max:150'],
             'kategori_id' => ['required', 'exists:dokumentasi_item,id'],
             'status' => ['required', 'in:selesai,progres,kendala'],
-            'bulan_index' => ['required', 'integer', 'min:0', 'max:18'],
-            'durasi_bulan' => ['required', 'integer', 'min:1', 'max:19'],
+            'bulan' => ['nullable', 'integer', 'min:1', 'max:12'],
+            'tahun' => ['nullable', 'integer', 'min:2020', 'max:2099'],
+            'periode_mulai' => ['nullable', 'string'],
+            'bulan_index' => ['nullable', 'integer', 'min:0'],
+            'durasi_bulan' => ['required', 'integer', 'min:1', 'max:60'],
             'lokasi_id' => ['nullable', 'exists:lokasi,id'],
             'catatan' => ['nullable', 'string'],
         ]);
 
-        // Convert month index (0 = Jun 2026) to Y-m-01 date
-        $idx = intval($validated['bulan_index']);
-        $year = 2026 + intdiv($idx + 5, 12);
-        $month = (($idx + 5) % 12) + 1;
-        $periodeMulai = sprintf('%04d-%02d-01', $year, $month);
+        // Convert to Y-m-01
+        if (!empty($validated['bulan']) && !empty($validated['tahun'])) {
+            $periodeMulai = sprintf('%04d-%02d-01', intval($validated['tahun']), intval($validated['bulan']));
+        } elseif (!empty($validated['periode_mulai'])) {
+            $periodeMulai = \Carbon\Carbon::parse($validated['periode_mulai'])->format('Y-m-01');
+        } elseif (isset($validated['bulan_index'])) {
+            $idx = intval($validated['bulan_index']);
+            $year = 2026 + intdiv($idx + 5, 12);
+            $month = (($idx + 5) % 12) + 1;
+            $periodeMulai = sprintf('%04d-%02d-01', $year, $month);
+        } else {
+            $periodeMulai = \Carbon\Carbon::now()->format('Y-m-01');
+        }
 
         // If lokasi_id is not given, default to the rig's current location
         $lokasiId = $validated['lokasi_id'] ?? null;
@@ -158,16 +213,27 @@ class JadwalController extends Controller
             'label' => ['required', 'string', 'max:150'],
             'kategori_id' => ['required', 'exists:dokumentasi_item,id'],
             'status' => ['required', 'in:selesai,progres,kendala'],
-            'bulan_index' => ['required', 'integer', 'min:0', 'max:18'],
-            'durasi_bulan' => ['required', 'integer', 'min:1', 'max:19'],
+            'bulan' => ['nullable', 'integer', 'min:1', 'max:12'],
+            'tahun' => ['nullable', 'integer', 'min:2020', 'max:2099'],
+            'periode_mulai' => ['nullable', 'string'],
+            'bulan_index' => ['nullable', 'integer', 'min:0'],
+            'durasi_bulan' => ['required', 'integer', 'min:1', 'max:60'],
             'lokasi_id' => ['nullable', 'exists:lokasi,id'],
             'catatan' => ['nullable', 'string'],
         ]);
 
-        $idx = intval($validated['bulan_index']);
-        $year = 2026 + intdiv($idx + 5, 12);
-        $month = (($idx + 5) % 12) + 1;
-        $periodeMulai = sprintf('%04d-%02d-01', $year, $month);
+        if (!empty($validated['bulan']) && !empty($validated['tahun'])) {
+            $periodeMulai = sprintf('%04d-%02d-01', intval($validated['tahun']), intval($validated['bulan']));
+        } elseif (!empty($validated['periode_mulai'])) {
+            $periodeMulai = \Carbon\Carbon::parse($validated['periode_mulai'])->format('Y-m-01');
+        } elseif (isset($validated['bulan_index'])) {
+            $idx = intval($validated['bulan_index']);
+            $year = 2026 + intdiv($idx + 5, 12);
+            $month = (($idx + 5) % 12) + 1;
+            $periodeMulai = sprintf('%04d-%02d-01', $year, $month);
+        } else {
+            $periodeMulai = $jadwal->periode_mulai?->format('Y-m-01') ?? \Carbon\Carbon::now()->format('Y-m-01');
+        }
 
         $lokasiId = $validated['lokasi_id'] ?? $jadwal->lokasi_id;
         if (!$lokasiId) {

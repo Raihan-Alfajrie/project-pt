@@ -47,7 +47,7 @@ class Jadwal extends Model
     }
 
     /**
-     * Get 0-based month index on the 19-month timeline (Jun 2026 = 0).
+     * Get 0-based month index on the timeline (Jun 2026 = 0).
      */
     public function getBulanMulaiIndexAttribute(): int
     {
@@ -57,7 +57,7 @@ class Jadwal extends Model
         $y = intval($this->periode_mulai->format('Y'));
         $m = intval($this->periode_mulai->format('n'));
         $idx = ($y - 2026) * 12 + $m - 6;
-        return max(0, min(18, $idx));
+        return max(0, $idx);
     }
 
     /**
@@ -65,13 +65,11 @@ class Jadwal extends Model
      */
     public function getPeriodeLabelAttribute(): string
     {
-        $months = [
-            'Jun-26', 'Jul-26', 'Aug-26', 'Sep-26', 'Oct-26', 'Nov-26', 'Dec-26',
-            'Jan-27', 'Feb-27', 'Mar-27', 'Apr-27', 'May-27', 'Jun-27', 'Jul-27',
-            'Aug-27', 'Sep-27', 'Oct-27', 'Nov-27', 'Dec-27'
-        ];
-        $start = $this->bulan_mulai_index;
-        $end = min(18, $start + $this->durasi_bulan - 1);
-        return "{$months[$start]} — {$months[$end]} ({$this->durasi_bulan} bulan)";
+        if (!$this->periode_mulai) {
+            return "—";
+        }
+        $start = $this->periode_mulai->format('M-y');
+        $end = $this->periode_mulai->copy()->addMonths(max(1, $this->durasi_bulan) - 1)->format('M-y');
+        return "{$start} — {$end} ({$this->durasi_bulan} bulan)";
     }
 }
