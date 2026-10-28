@@ -8,6 +8,8 @@ use App\Services\AuditLogService;
 use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
@@ -35,24 +37,51 @@ class UserController extends Controller
             ->orderBy('id')
             ->get();
 
-        $adminTotal = $users->where('jabatan', 'administrator')->count();
-        $adminOn = $users->where('jabatan', 'administrator')->where('status', 'online')->count();
-        $adminOff = $users->where('jabatan', 'administrator')->where('status', 'offline')->count();
+        $threshold = time() - (10 * 60);
+        $activeSessionUserIds = DB::table('sessions')
+            ->whereNotNull('user_id')
+            ->where('last_activity', '>=', $threshold)
+            ->pluck('user_id')
+            ->toArray();
 
-        $userTotal = $users->where('jabatan', 'pekerja')->count();
-        $userOn = $users->where('jabatan', 'pekerja')->where('status', 'online')->count();
-        $userOff = $users->where('jabatan', 'pekerja')->where('status', 'offline')->count();
+        if (Auth::check()) {
+            $activeSessionUserIds[] = Auth::id();
+        }
 
-        $usersData = $users->map(fn($u) => [
-            'id' => $u->id,
-            'nama' => $u->nama,
-            'username' => $u->username,
-            'email' => $u->email,
-            'jabatan' => ucfirst($u->jabatan),
-            'status' => $u->status,
-            'initials' => $u->initials,
-            'akses' => $u->akses_map,
-        ]);
+        $usersWithSessions = DB::table('sessions')
+            ->whereNotNull('user_id')
+            ->pluck('user_id')
+            ->toArray();
+
+        $usersData = $users->map(function ($u) use ($activeSessionUserIds, $usersWithSessions) {
+            if (Auth::check() && Auth::id() === $u->id) {
+                $status = 'online';
+            } elseif (in_array($u->id, $usersWithSessions)) {
+                $status = in_array($u->id, $activeSessionUserIds) ? 'online' : 'offline';
+            } else {
+                $status = $u->status ?? 'offline';
+            }
+
+            return [
+                'id' => $u->id,
+                'nama' => $u->nama,
+                'username' => $u->username,
+                'email' => $u->email,
+                'jabatan' => ucfirst($u->jabatan),
+                'status' => $status,
+                'initials' => $u->initials,
+                'foto_profil' => $u->foto_profil,
+                'akses' => $u->akses_map,
+            ];
+        });
+
+        $adminTotal = $usersData->where('jabatan', 'Administrator')->count();
+        $adminOn = $usersData->where('jabatan', 'Administrator')->where('status', 'online')->count();
+        $adminOff = $usersData->where('jabatan', 'Administrator')->where('status', 'offline')->count();
+
+        $userTotal = $usersData->where('jabatan', 'Pekerja')->count();
+        $userOn = $usersData->where('jabatan', 'Pekerja')->where('status', 'online')->count();
+        $userOff = $usersData->where('jabatan', 'Pekerja')->where('status', 'offline')->count();
 
         return view('users.index', compact(
             'users',
@@ -118,7 +147,7 @@ class UserController extends Controller
             'username' => ['required', 'string', 'max:100', 'unique:users,username,' . $user->id],
             'email' => ['required', 'string', 'email', 'max:150', 'unique:users,email,' . $user->id],
             'jabatan' => ['required', 'in:administrator,pekerja'],
-            'status' => ['required', 'in:online,offline'],
+            'status' => ['nullable', 'in:online,offline'],
             'password' => ['nullable', 'string', 'min:6'],
         ]);
 
@@ -127,8 +156,11 @@ class UserController extends Controller
             'username' => strtolower(trim($validated['username'])),
             'email' => strtolower(trim($validated['email'])),
             'jabatan' => $validated['jabatan'],
-            'status' => $validated['status'],
         ];
+
+        if (isset($validated['status'])) {
+            $updateData['status'] = $validated['status'];
+        }
 
         if (!empty($validated['password'])) {
             $updateData['password'] = Hash::make($validated['password']);

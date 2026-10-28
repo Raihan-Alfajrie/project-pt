@@ -106,7 +106,7 @@
                                         <div class="mini-avatar">{{ $l['initials'] }}</div>
                                         <div>
                                             <div class="n">{{ $l['u'] }}</div>
-                                            <div class="u">@{{ $l['un'] }}</div>
+                                            <div class="u">{{ '@' . $l['un'] }}</div>
                                         </div>
                                     </div>
                                 </td>

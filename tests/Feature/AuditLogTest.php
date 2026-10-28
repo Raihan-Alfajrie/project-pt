@@ -44,6 +44,8 @@ class AuditLogTest extends TestCase
         $response->assertOk();
         $response->assertSee('Budi Santoso');
         $response->assertSee('KRG-PJ1');
+        $response->assertSee('@budi.santoso');
+        $response->assertDontSee("{{ \$l['un'] }}", false);
     }
 
     public function test_audit_log_is_read_only_and_shows_action_tags(): void

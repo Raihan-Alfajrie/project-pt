@@ -28,7 +28,8 @@
         .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; margin-top: 18px; }
         .dkv .k { font-size: 11px; color: var(--text-faint); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
         .dkv .v { font-size: 13.5px; margin-top: 4px; font-weight: 600; }
-        .dkv .v.status { color: var(--amber, #f0a93b); }
+        .dkv .v.status.online { color: var(--green, #4ade80); }
+        .dkv .v.status.offline { color: var(--amber, #f0a93b); }
 
         .session-card { margin-top: 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; background: var(--panel-2); border: 1px solid var(--border-soft); border-radius: 12px; padding: 16px 18px; flex-wrap: wrap; }
         .session-left { display: flex; align-items: flex-start; gap: 12px; }
@@ -156,7 +157,7 @@
                 </div>
                 <div class="dkv">
                     <div class="k">Status</div>
-                    <div class="v status">{{ ucfirst($user->status ?? 'online') }}</div>
+                    <div class="v status {{ ($user->status ?? 'online') === 'online' ? 'online' : 'offline' }}">{{ ucfirst($user->status ?? 'online') }}</div>
                 </div>
                 <div class="dkv">
                     <div class="k">Peran</div>

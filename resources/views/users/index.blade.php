@@ -219,15 +219,22 @@
                                 data-email="{{ $u['email'] }}"
                                 data-jabatan="{{ $u['jabatan'] }}"
                                 data-status="{{ $u['status'] }}"
+                                data-foto="{{ $u['foto_profil'] ? asset('storage/' . $u['foto_profil']) : '' }}"
                                 data-akses-alat="{{ $u['akses']['alat'] ? '1' : '0' }}"
                                 data-akses-lokasi="{{ $u['akses']['lokasi'] ? '1' : '0' }}"
                                 data-akses-jadwal="{{ $u['akses']['jadwal'] ? '1' : '0' }}">
                                 <td>
                                     <div class="user-cell">
-                                        <div class="mini-avatar">{{ $u['initials'] }}</div>
+                                        <div class="mini-avatar" style="overflow:hidden;">
+                                            @if (!empty($u['foto_profil']))
+                                                <img src="{{ asset('storage/' . $u['foto_profil']) }}" alt="{{ $u['nama'] }}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">
+                                            @else
+                                                {{ $u['initials'] }}
+                                            @endif
+                                        </div>
                                         <div>
                                             <div class="n">{{ $u['nama'] }}</div>
-                                            <div class="u">@{{ $u['username'] }}</div>
+                                            <div class="u">{{ '@' . $u['username'] }}</div>
                                         </div>
                                     </div>
                                 </td>
@@ -364,17 +371,10 @@
                             <label>Gmail / Email <span class="req">*</span></label>
                             <input id="eEmail" name="email" type="email" required placeholder="nama@gmail.com">
                         </div>
-                        <div class="field">
+                        <div class="field full">
                             <label>Password Baru</label>
                             <input id="ePassword" name="password" type="password" placeholder="Kosongkan jika tidak diubah" minlength="6">
                             <span class="subnote">Hanya isi jika ingin mengubah password</span>
-                        </div>
-                        <div class="field">
-                            <label>Status</label>
-                            <select id="eStatus" name="status">
-                                <option value="online">Online</option>
-                                <option value="offline">Offline</option>
-                            </select>
                         </div>
                     </div>
                 </div>
@@ -475,7 +475,7 @@
             </div>
             <div class="modal-body">
                 <div class="detail-hero">
-                    <div class="big-avatar" id="dAvatar">—</div>
+                    <div class="big-avatar" id="dAvatar" style="overflow:hidden;">—</div>
                     <div>
                         <h4 id="dNama">—</h4>
                         <div class="u" id="dUsername">@—</div>
@@ -606,7 +606,6 @@
             document.getElementById('eUsername').value = tr.getAttribute('data-username');
             document.getElementById('eEmail').value = tr.getAttribute('data-email');
             document.getElementById('eJabatan').value = tr.getAttribute('data-jabatan').toLowerCase();
-            document.getElementById('eStatus').value = tr.getAttribute('data-status');
             document.getElementById('ePassword').value = '';
 
             closeOverlay('overlayDetail');
@@ -645,13 +644,23 @@
             const email = tr.getAttribute('data-email');
             const jabatan = tr.getAttribute('data-jabatan');
             const status = tr.getAttribute('data-status');
+            const foto = tr.getAttribute('data-foto');
             const aksesAlat = tr.getAttribute('data-akses-alat') === '1';
             const aksesLokasi = tr.getAttribute('data-akses-lokasi') === '1';
             const aksesJadwal = tr.getAttribute('data-akses-jadwal') === '1';
 
-            const initials = tr.querySelector('.mini-avatar').textContent;
+            const dAvatar = document.getElementById('dAvatar');
+            if (foto) {
+                dAvatar.innerHTML = `<img src="${foto}" alt="${nama}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">`;
+            } else {
+                const words = (nama || 'User').trim().split(/\s+/);
+                let inits = '';
+                for (let i = 0; i < words.length && i < 2; i++) {
+                    if (words[i]) inits += words[i][0];
+                }
+                dAvatar.textContent = inits.toUpperCase() || 'U';
+            }
 
-            document.getElementById('dAvatar').textContent = initials;
             document.getElementById('dNama').textContent = nama;
             document.getElementById('dUsername').textContent = '@' + username;
             document.getElementById('dEmail').textContent = email;
