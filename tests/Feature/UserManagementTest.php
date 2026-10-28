@@ -65,6 +65,9 @@ class UserManagementTest extends TestCase
         $response->assertSee('Total User (Pekerja)');
         $response->assertSee('Budi Santoso');
         $response->assertSee('Agus Wijaya');
+        $response->assertSee('@budi.santoso');
+        $response->assertDontSee("{{ \$u['username'] }}", false);
+        $response->assertDontSee('id="eStatus"', false);
     }
 
     public function test_admin_can_create_new_user_with_manual_password(): void
@@ -155,5 +158,17 @@ class UserManagementTest extends TestCase
         $deleteResponse->assertRedirect('/users');
         $deleteResponse->assertSessionHas('success');
         $this->assertDatabaseMissing('users', ['id' => $otherUser->id]);
+    }
+
+    public function test_user_management_displays_profile_photo_when_present(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = User::find(1);
+        $admin->update(['foto_profil' => 'profile_photos/sample.jpg']);
+
+        $response = $this->actingAs($admin)->get('/users');
+        $response->assertStatus(200);
+        $response->assertSee('profile_photos/sample.jpg');
     }
 }

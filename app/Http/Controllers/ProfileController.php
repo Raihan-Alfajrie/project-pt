@@ -19,6 +19,9 @@ class ProfileController extends Controller
     public function edit(Request $request): View
     {
         $user = $request->user();
+        if ($user && $user->status !== 'online') {
+            $user->update(['status' => 'online']);
+        }
 
         $lastLoginLog = $user->auditLogs()->where('aksi', 'login')->latest('waktu')->first();
         $lastLogin = $lastLoginLog?->waktu

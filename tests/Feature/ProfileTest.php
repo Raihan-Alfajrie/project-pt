@@ -142,4 +142,21 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_profile_shows_online_status_and_wib_timezone(): void
+    {
+        $this->assertSame('Asia/Jakarta', config('app.timezone'));
+
+        $user = User::factory()->create([
+            'status' => 'offline',
+        ]);
+
+        $response = $this->actingAs($user)->get('/profil');
+        $response->assertOk();
+        $response->assertSee('status online', false);
+        $response->assertSee('Online');
+
+        $user->refresh();
+        $this->assertSame('online', $user->status);
+    }
 }
