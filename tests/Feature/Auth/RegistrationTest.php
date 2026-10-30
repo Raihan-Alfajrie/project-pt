@@ -14,6 +14,16 @@ class RegistrationTest extends TestCase
         $response = $this->get('/register');
 
         $response->assertStatus(200);
+        $response->assertSee('logo_pertamina_2.png');
+        $response->assertSee('Buat Akun Baru');
+        $response->assertSee('Lengkapi data diri Anda untuk mendaftar');
+        $response->assertSee('Nama Lengkap');
+        $response->assertSee('Username');
+        $response->assertSee('Email');
+        $response->assertSee('Password');
+        $response->assertSee('Daftar');
+        $response->assertSee('Sudah punya akun?');
+        $response->assertSee('Masuk');
     }
 
     public function test_new_users_can_register(): void

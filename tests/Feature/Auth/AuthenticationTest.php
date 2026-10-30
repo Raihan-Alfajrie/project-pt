@@ -15,6 +15,15 @@ class AuthenticationTest extends TestCase
         $response = $this->get('/login');
 
         $response->assertStatus(200);
+        $response->assertSee('logo_pertamina_2.png');
+        $response->assertSee('Selamat Datang Kembali');
+        $response->assertSee('Silahkan konfirmasi diri anda sebelum masuk');
+        $response->assertSee('Username atau Email');
+        $response->assertSee('Password');
+        $response->assertSee('Ingat saya');
+        $response->assertSee('Masuk');
+        $response->assertSee('Belum punya akun?');
+        $response->assertSee('Daftar');
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void

@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+:root, :root[data-theme="dark"] {
   --red: #ea2027;
   --red-strong: #c8141b;
   --red-soft: rgba(234, 32, 39, 0.16);
@@ -23,27 +23,33 @@
   font-family: 'Inter', system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #eceae7;
-    --panel: #ffffff;
-    --panel-2: #f7f1f1;
-    --panel-3: #f2e9e9;
-    --text: #241417;
-    --text-dim: #5c4b4d;
-    --text-faint: #8b7a7c;
-    --border: rgba(234, 32, 39, 0.22);
-    --border-soft: rgba(0, 0, 0, 0.08);
-  }
+:root[data-theme="light"] {
+  --bg: #eceae7;
+  --panel: #ffffff;
+  --panel-2: #f7f1f1;
+  --panel-3: #f2e9e9;
+  --text: #241417;
+  --text-dim: #5c4b4d;
+  --text-faint: #8b7a7c;
+  --border: rgba(234, 32, 39, 0.22);
+  --border-soft: rgba(0, 0, 0, 0.08);
 }
 
-:root[data-theme="dark"] {
-  --bg: #212326;
-  --panel: #3b2226;
-  --panel-2: #492226;
-  --text: #f6f5f4;
-  --text-dim: rgba(246, 245, 244, 0.66);
-  --text-faint: rgba(246, 245, 244, 0.4);
+/* Theme Icon Visibility Rules */
+:root[data-theme="dark"] .theme-icon-moon,
+:root:not([data-theme="light"]) .theme-icon-moon {
+  display: none !important;
+}
+:root[data-theme="dark"] .theme-icon-sun,
+:root:not([data-theme="light"]) .theme-icon-sun {
+  display: block !important;
+}
+
+:root[data-theme="light"] .theme-icon-sun {
+  display: none !important;
+}
+:root[data-theme="light"] .theme-icon-moon {
+  display: block !important;
 }
 
 .mono {

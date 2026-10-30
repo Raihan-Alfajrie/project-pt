@@ -6,13 +6,57 @@
             z-index: 1;
             max-width: 1140px;
             margin: 0 auto;
-            padding: 40px 24px 80px;
+            padding: 48px 24px 80px;
         }
 
-        /* Hero */
+        /* Hero Banner with Background */
+        .about-hero-wrap {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            padding-bottom: 60px;
+        }
+        .about-hero-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                radial-gradient(rgba(234,32,39,.22) 1.3px, transparent 1.3px),
+                linear-gradient(180deg, 
+                    rgba(21, 17, 19, 0.55) 0%, 
+                    rgba(21, 17, 19, 0.68) 35%, 
+                    rgba(21, 17, 19, 0.78) 60%, 
+                    rgba(21, 17, 19, 0.88) 80%, 
+                    rgba(21, 17, 19, 0.96) 92%, 
+                    var(--bg) 100%),
+                url('{{ asset('background_about.jpeg') }}');
+            background-size: 26px 26px, 100% 100%, cover;
+            background-position: 0 0, center center, center 20%;
+            background-repeat: repeat, no-repeat, no-repeat;
+        }
+        :root[data-theme="light"] .about-hero-bg {
+            background-image:
+                radial-gradient(rgba(234,32,39,.18) 1.3px, transparent 1.3px),
+                linear-gradient(180deg, 
+                    rgba(245, 243, 241, 0.65) 0%, 
+                    rgba(245, 243, 241, 0.78) 35%, 
+                    rgba(245, 243, 241, 0.85) 60%, 
+                    rgba(245, 243, 241, 0.92) 80%, 
+                    rgba(245, 243, 241, 0.98) 92%, 
+                    var(--bg) 100%),
+                url('{{ asset('background_about.jpeg') }}');
+        }
+        .about-hero-inner {
+            position: relative;
+            z-index: 1;
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 50px 24px 0;
+        }
         .about-hero {
             max-width: 860px;
-            margin: 40px auto 0;
+            margin: 0 auto;
             text-align: center;
         }
         .eyebrow {
@@ -113,7 +157,7 @@
 
         /* Stats Strip */
         .stats {
-            margin: 54px auto 0;
+            margin: 48px auto 0;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 1px;
@@ -121,15 +165,19 @@
             border: 1px solid var(--border-soft);
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,.25);
+            box-shadow: 0 16px 40px rgba(0,0,0,.35);
         }
         .stat {
-            background: var(--panel);
+            background: rgba(30, 21, 23, 0.88);
+            backdrop-filter: blur(8px);
             padding: 24px 20px;
             text-align: center;
             transition: background .2s;
         }
-        .stat:hover { background: var(--panel-2); }
+        :root[data-theme="light"] .stat {
+            background: rgba(255, 255, 255, 0.88);
+        }
+        .stat:hover { background: rgba(37, 26, 29, 0.95); }
         .stat .n {
             font-size: 28px;
             font-weight: 800;
@@ -466,64 +514,69 @@
         }
     </style>
 
-    <div class="about-wrap">
-        <!-- ===== HERO ===== -->
-        <div class="about-hero">
-            <div class="eyebrow">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                Wilayah Kerja Zona 4 — Regional 1 Sumatera
-            </div>
-            <h1>Platform Monitoring Terintegrasi<br><span>Rig &amp; Aset Pemboran</span></h1>
-            <p>
-                Sistem informasi operasional terpusat satu pintu (<em>single source of truth</em>) yang dirancang untuk mengawal keandalan armada rig pemboran, peralatan pendukung, timeline pergerakan jadwal tajak, dan pemetaan lapangan migas di WK Zona 4 secara akurat, real-time, dan transparan.
-            </p>
-            <div class="hero-actions">
-                @auth
-                    <a href="{{ route('dashboard') }}" class="btn-hero-primary">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
-                        Buka Dashboard
+    <!-- ===== HERO SECTION WITH BANNER BACKGROUND ===== -->
+    <div class="about-hero-wrap">
+        <div class="about-hero-bg" aria-hidden="true"></div>
+        <div class="about-hero-inner">
+            <div class="about-hero">
+                <div class="eyebrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    Wilayah Kerja Zona 4 — Regional 1 Sumatera
+                </div>
+                <h1>Platform Monitoring Terintegrasi<br><span>Rig &amp; Aset Pemboran</span></h1>
+                <p>
+                    Sistem informasi operasional terpusat satu pintu (<em>single source of truth</em>) yang dirancang untuk mengawal keandalan armada rig pemboran, peralatan pendukung, timeline pergerakan jadwal tajak, dan pemetaan lapangan migas di WK Zona 4 secara akurat, real-time, dan transparan.
+                </p>
+                <div class="hero-actions">
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="btn-hero-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+                            Buka Dashboard
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" class="btn-hero-primary">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+                            Masuk ke Platform
+                        </a>
+                    @endauth
+                    <a href="#lapangan" class="btn-hero-secondary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 1114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+                        Lihat Wilayah Lapangan
                     </a>
-                @else
-                    <button class="btn-hero-primary" type="button" onclick="openAuth('login')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
-                        Masuk ke Platform
-                    </button>
-                @endauth
-                <a href="#lapangan" class="btn-hero-secondary">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 1114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
-                    Lihat Wilayah Lapangan
-                </a>
-                <a href="#kapabilitas" class="btn-hero-secondary">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
-                    Kapabilitas Sistem
-                </a>
+                    <a href="#kapabilitas" class="btn-hero-secondary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
+                        Kapabilitas Sistem
+                    </a>
+                </div>
+            </div>
+
+            <!-- ===== STATS STRIP ===== -->
+            <div class="stats">
+                <div class="stat">
+                    <div class="n">16</div>
+                    <div class="l">Rig Termonitor</div>
+                    <div class="sub">Armada Drilling &amp; Workover</div>
+                </div>
+                <div class="stat">
+                    <div class="n">14+</div>
+                    <div class="l">Struktur Lapangan</div>
+                    <div class="sub">Tersebar di Sumatera Bagian Selatan</div>
+                </div>
+                <div class="stat">
+                    <div class="n">100%</div>
+                    <div class="l">Tracking Terintegrasi</div>
+                    <div class="sub">Jadwal Tajak, Moving &amp; Kesiapan</div>
+                </div>
+                <div class="stat">
+                    <div class="n">24/7</div>
+                    <div class="l">Sistem Peringatan Dini</div>
+                    <div class="sub">Audit Log &amp; Notifikasi Instan</div>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- ===== STATS STRIP ===== -->
-        <div class="stats">
-            <div class="stat">
-                <div class="n">16</div>
-                <div class="l">Rig Termonitor</div>
-                <div class="sub">Armada Drilling &amp; Workover</div>
-            </div>
-            <div class="stat">
-                <div class="n">14+</div>
-                <div class="l">Struktur Lapangan</div>
-                <div class="sub">Tersebar di Sumatera Bagian Selatan</div>
-            </div>
-            <div class="stat">
-                <div class="n">100%</div>
-                <div class="l">Tracking Terintegrasi</div>
-                <div class="sub">Jadwal Tajak, Moving &amp; Kesiapan</div>
-            </div>
-            <div class="stat">
-                <div class="n">24/7</div>
-                <div class="l">Sistem Peringatan Dini</div>
-                <div class="sub">Audit Log &amp; Notifikasi Instan</div>
-            </div>
-        </div>
-
+    <div class="about-wrap">
         <!-- ===== SECTION 1: 3 PILAR NILAI UTAMA ===== -->
         <div class="section-block" id="pilar">
             <div class="section-head">
@@ -786,10 +839,10 @@
                         Buka Dashboard Sekarang
                     </a>
                 @else
-                    <button class="btn-hero-primary" type="button" onclick="openAuth('login')">
+                    <a href="{{ route('login') }}" class="btn-hero-primary">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
                         Masuk ke Akun
-                    </button>
+                    </a>
                 @endauth
                 <a href="{{ route('home') }}" class="btn-hero-secondary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>

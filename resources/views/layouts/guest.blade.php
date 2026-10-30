@@ -9,8 +9,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('pertamina_theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+        function toggleTheme() {
+            var currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            var newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            try {
+                localStorage.setItem('pertamina_theme', newTheme);
+            } catch (e) {}
+            window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: newTheme } }));
+        }
+    </script>
     <style>
-        :root {
+        :root, :root[data-theme="dark"] {
             --red: #ea2027; --red-strong: #c8141b; --red-soft: rgba(234,32,39,.16);
             --bg: #151113; --panel: #1e1517; --panel-2: #251a1d; --panel-3: #2c1f22;
             --border: rgba(234,32,39,.25); --border-soft: rgba(255,255,255,.08);
@@ -18,15 +37,35 @@
             font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box;
             padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
         }
-        @media (prefers-color-scheme: light) {
-            :root:not([data-theme="dark"]) {
-                --bg: #f5f3f1; --panel: #ffffff; --panel-2: #faf7f6; --panel-3: #f2ecea;
-                --text: #221417; --text-dim: #5c4b4d; --text-faint: #8b7a7c; --border: rgba(234,32,39,.2); --border-soft: rgba(0,0,0,.08);
-            }
+        :root[data-theme="light"] {
+            --bg: #f5f3f1; --panel: #ffffff; --panel-2: #faf7f6; --panel-3: #f2ecea;
+            --text: #221417; --text-dim: #5c4b4d; --text-faint: #8b7a7c; --border: rgba(234,32,39,.2); --border-soft: rgba(0,0,0,.08);
         }
-        :root[data-theme="dark"] {
-            --bg: #151113; --panel: #1e1517; --panel-2: #251a1d; --text: #f6f5f4; --text-dim: rgba(246,245,244,.66); --text-faint: rgba(246,245,244,.42);
+        :root[data-theme="light"] .topbar { background: rgba(245,243,241,.85); }
+        :root[data-theme="light"] .pubnav a.active, :root[data-theme="light"] .pubnav a:hover { color: var(--text); }
+        :root[data-theme="dark"] .theme-icon-moon,
+        :root:not([data-theme="light"]) .theme-icon-moon {
+            display: none !important;
         }
+        :root[data-theme="dark"] .theme-icon-sun,
+        :root:not([data-theme="light"]) .theme-icon-sun {
+            display: block !important;
+        }
+        :root[data-theme="light"] .theme-icon-sun {
+            display: none !important;
+        }
+        :root[data-theme="light"] .theme-icon-moon {
+            display: block !important;
+        }
+        .btn-theme-guest {
+            width: 36px; height: 36px; border-radius: 9px;
+            border: 1px solid var(--border-soft); background: var(--panel-2);
+            color: var(--text); display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all .2s;
+        }
+        .btn-theme-guest:hover { border-color: var(--red); color: #fff; transform: translateY(-1px); }
+        :root[data-theme="light"] .btn-theme-guest:hover { color: var(--red); }
+        .btn-theme-guest svg { width: 17px; height: 17px; }
         * { box-sizing: border-box; }
         html { scroll-padding-top: 80px; scroll-behavior: smooth; }
         body { margin: 0; background: var(--bg); color: var(--text); min-height: 100%; -webkit-font-smoothing: antialiased; }
@@ -86,10 +125,12 @@
         }
     </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 <body>
     <div class="bgdots"></div>
 
+    @if (! ($standalone ?? false))
     <div class="topbar">
         <a href="{{ route('home') }}" class="brand">
             <div class="mark">
@@ -105,6 +146,27 @@
             <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'active' : '' }}">About</a>
         </nav>
         <div class="topbar-actions">
+            <!-- Theme Toggle Button -->
+            <button class="btn-theme-guest"
+                    type="button"
+                    onclick="toggleTheme()"
+                    title="Ganti mode terang/gelap"
+                    aria-label="Ganti mode terang/gelap">
+                <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
             @auth
                 <a href="{{ route('dashboard') }}" class="btn-fill">Ke Dashboard</a>
                 <form method="POST" action="{{ route('logout') }}" style="display:inline; margin:0;">
@@ -112,16 +174,18 @@
                     <button type="submit" class="btn-outline">Keluar</button>
                 </form>
             @else
-                <button class="btn-outline" id="btnOpenLogin" type="button">Masuk</button>
-                <button class="btn-fill" id="btnOpenRegister" type="button">Daftar</button>
+                <a href="{{ route('login') }}" class="btn-outline" id="btnOpenLogin">Masuk</a>
+                <a href="{{ route('register') }}" class="btn-fill" id="btnOpenRegister">Daftar</a>
             @endauth
         </div>
     </div>
+    @endif
 
     <main>
         {{ $slot }}
     </main>
 
+    @if (! ($standalone ?? false))
     <div class="footer" style="position:relative; z-index:1; text-align:center; padding:32px 24px 48px; font-size:11.5px; color:var(--text-faint); border-top:1px solid var(--border-soft);">
         © 2026 Pertamina Admin Panel — Internal Use Only
     </div>
@@ -130,7 +194,10 @@
     <div class="overlay {{ ($errors->any() || request('auth')) ? 'show' : '' }}" id="overlayAuth">
         <div class="auth-modal">
             <div class="auth-head">
-                <h3 id="authTitle">Masuk ke akun</h3>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="{{ asset('logo_pertamina_2.png') }}" alt="Logo Pertamina" style="width:28px; height:28px; object-fit:contain;">
+                    <h3 id="authTitle">Masuk ke akun</h3>
+                </div>
                 <button class="auth-close" id="authClose" type="button" aria-label="Tutup">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
                 </button>
@@ -233,8 +300,6 @@
             overlay.classList.remove('show');
         }
 
-        if (btnOpenLogin) btnOpenLogin.addEventListener('click', () => openAuth('login'));
-        if (btnOpenRegister) btnOpenRegister.addEventListener('click', () => openAuth('register'));
         if (tabLogin) tabLogin.addEventListener('click', () => setTab('login'));
         if (tabRegister) tabRegister.addEventListener('click', () => setTab('register'));
         if (authClose) authClose.addEventListener('click', closeAuth);
@@ -247,5 +312,7 @@
         const isRegisterActive = @json(old('nama') || old('username') || request('auth') === 'register');
         setTab(isRegisterActive ? 'register' : 'login');
     </script>
+    @endif
+    @stack('scripts')
 </body>
 </html>
