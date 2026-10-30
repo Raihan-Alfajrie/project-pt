@@ -484,10 +484,10 @@
                         Buka Dashboard
                     </a>
                 @else
-                    <button class="btn-hero-primary" type="button" onclick="openAuth('login')">
+                    <a href="{{ route('login') }}" class="btn-hero-primary">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
                         Masuk ke Platform
-                    </button>
+                    </a>
                 @endauth
                 <a href="#lapangan" class="btn-hero-secondary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 1114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
@@ -786,10 +786,10 @@
                         Buka Dashboard Sekarang
                     </a>
                 @else
-                    <button class="btn-hero-primary" type="button" onclick="openAuth('login')">
+                    <a href="{{ route('login') }}" class="btn-hero-primary">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
                         Masuk ke Akun
-                    </button>
+                    </a>
                 @endauth
                 <a href="{{ route('home') }}" class="btn-hero-secondary">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>

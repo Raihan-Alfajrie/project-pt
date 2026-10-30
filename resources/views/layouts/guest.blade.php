@@ -86,10 +86,12 @@
         }
     </style>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 <body>
     <div class="bgdots"></div>
 
+    @if (! ($standalone ?? false))
     <div class="topbar">
         <a href="{{ route('home') }}" class="brand">
             <div class="mark">
@@ -112,16 +114,18 @@
                     <button type="submit" class="btn-outline">Keluar</button>
                 </form>
             @else
-                <button class="btn-outline" id="btnOpenLogin" type="button">Masuk</button>
-                <button class="btn-fill" id="btnOpenRegister" type="button">Daftar</button>
+                <a href="{{ route('login') }}" class="btn-outline" id="btnOpenLogin">Masuk</a>
+                <a href="{{ route('register') }}" class="btn-fill" id="btnOpenRegister">Daftar</a>
             @endauth
         </div>
     </div>
+    @endif
 
     <main>
         {{ $slot }}
     </main>
 
+    @if (! ($standalone ?? false))
     <div class="footer" style="position:relative; z-index:1; text-align:center; padding:32px 24px 48px; font-size:11.5px; color:var(--text-faint); border-top:1px solid var(--border-soft);">
         © 2026 Pertamina Admin Panel — Internal Use Only
     </div>
@@ -130,7 +134,10 @@
     <div class="overlay {{ ($errors->any() || request('auth')) ? 'show' : '' }}" id="overlayAuth">
         <div class="auth-modal">
             <div class="auth-head">
-                <h3 id="authTitle">Masuk ke akun</h3>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="{{ asset('logo_pertamina_2.png') }}" alt="Logo Pertamina" style="width:28px; height:28px; object-fit:contain;">
+                    <h3 id="authTitle">Masuk ke akun</h3>
+                </div>
                 <button class="auth-close" id="authClose" type="button" aria-label="Tutup">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
                 </button>
@@ -233,8 +240,6 @@
             overlay.classList.remove('show');
         }
 
-        if (btnOpenLogin) btnOpenLogin.addEventListener('click', () => openAuth('login'));
-        if (btnOpenRegister) btnOpenRegister.addEventListener('click', () => openAuth('register'));
         if (tabLogin) tabLogin.addEventListener('click', () => setTab('login'));
         if (tabRegister) tabRegister.addEventListener('click', () => setTab('register'));
         if (authClose) authClose.addEventListener('click', closeAuth);
@@ -247,5 +252,7 @@
         const isRegisterActive = @json(old('nama') || old('username') || request('auth') === 'register');
         setTab(isRegisterActive ? 'register' : 'login');
     </script>
+    @endif
+    @stack('scripts')
 </body>
 </html>

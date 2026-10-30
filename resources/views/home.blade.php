@@ -56,10 +56,10 @@
                     Buka Dashboard
                 </a>
             @else
-                <button class="btn-hero-primary" id="btnHeroLogin" type="button" onclick="openAuth('login')">
+                <a href="{{ route('login') }}" class="btn-hero-primary" id="btnHeroLogin">
                     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
                     Masuk ke Dashboard
-                </button>
+                </a>
             @endauth
             <a href="#fitur" class="btn-hero-secondary">Lihat Fitur</a>
         </div>
