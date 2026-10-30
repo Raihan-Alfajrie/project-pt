@@ -35,19 +35,17 @@
             background-position: 0 0, center center, center 20%;
             background-repeat: repeat, no-repeat, no-repeat;
         }
-        @media (prefers-color-scheme: light) {
-            :root:not([data-theme="dark"]) .about-hero-bg {
-                background-image:
-                    radial-gradient(rgba(234,32,39,.18) 1.3px, transparent 1.3px),
-                    linear-gradient(180deg, 
-                        rgba(245, 243, 241, 0.65) 0%, 
-                        rgba(245, 243, 241, 0.78) 35%, 
-                        rgba(245, 243, 241, 0.85) 60%, 
-                        rgba(245, 243, 241, 0.92) 80%, 
-                        rgba(245, 243, 241, 0.98) 92%, 
-                        var(--bg) 100%),
-                    url('{{ asset('background_about.jpeg') }}');
-            }
+        :root[data-theme="light"] .about-hero-bg {
+            background-image:
+                radial-gradient(rgba(234,32,39,.18) 1.3px, transparent 1.3px),
+                linear-gradient(180deg, 
+                    rgba(245, 243, 241, 0.65) 0%, 
+                    rgba(245, 243, 241, 0.78) 35%, 
+                    rgba(245, 243, 241, 0.85) 60%, 
+                    rgba(245, 243, 241, 0.92) 80%, 
+                    rgba(245, 243, 241, 0.98) 92%, 
+                    var(--bg) 100%),
+                url('{{ asset('background_about.jpeg') }}');
         }
         .about-hero-inner {
             position: relative;
@@ -176,10 +174,8 @@
             text-align: center;
             transition: background .2s;
         }
-        @media (prefers-color-scheme: light) {
-            :root:not([data-theme="dark"]) .stat {
-                background: rgba(255, 255, 255, 0.88);
-            }
+        :root[data-theme="light"] .stat {
+            background: rgba(255, 255, 255, 0.88);
         }
         .stat:hover { background: rgba(37, 26, 29, 0.95); }
         .stat .n {

@@ -16,7 +16,8 @@
             max-width: 440px;
             margin-bottom: 14px;
             display: flex;
-            justify-content: flex-start;
+            align-items: center;
+            justify-content: space-between;
         }
         .back-link {
             display: inline-flex;
@@ -40,6 +41,28 @@
         .back-link svg {
             width: 14px;
             height: 14px;
+        }
+        .auth-theme-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            border: 1px solid var(--border-soft);
+            background: var(--panel);
+            color: var(--text-dim);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+        .auth-theme-btn:hover {
+            color: #fff;
+            border-color: var(--border);
+            transform: translateY(-1px);
+        }
+        .auth-theme-btn svg {
+            width: 16px;
+            height: 16px;
         }
         .auth-card {
             background: var(--panel);
@@ -219,6 +242,55 @@
             margin-top: 5px;
             line-height: 1.3;
         }
+
+        /* Light Mode Overrides for Register */
+        :root[data-theme="light"] .auth-card {
+            background: #ffffff !important;
+            border-color: rgba(234,32,39,.18) !important;
+            box-shadow: 0 16px 50px rgba(0,0,0,.08) !important;
+        }
+        :root[data-theme="light"] .auth-title {
+            color: #241417 !important;
+        }
+        :root[data-theme="light"] .back-link,
+        :root[data-theme="light"] .auth-theme-btn {
+            background: #ffffff !important;
+            border-color: rgba(0,0,0,.1) !important;
+            color: #5c4b4d !important;
+        }
+        :root[data-theme="light"] .back-link:hover,
+        :root[data-theme="light"] .auth-theme-btn:hover {
+            color: var(--red) !important;
+            border-color: var(--red) !important;
+        }
+        :root[data-theme="light"] .auth-card input.form-input,
+        :root[data-theme="light"] .auth-card input[type="text"],
+        :root[data-theme="light"] .auth-card input[type="email"],
+        :root[data-theme="light"] .auth-card input[type="password"] {
+            background-color: #faf9f8 !important;
+            border: 1.5px solid rgba(0, 0, 0, 0.15) !important;
+            color: #241417 !important;
+        }
+        :root[data-theme="light"] .auth-card input.form-input::placeholder,
+        :root[data-theme="light"] .auth-card input[type="text"]::placeholder,
+        :root[data-theme="light"] .auth-card input[type="email"]::placeholder,
+        :root[data-theme="light"] .auth-card input[type="password"]::placeholder {
+            color: rgba(92, 75, 77, 0.5) !important;
+        }
+        :root[data-theme="light"] .auth-card input.form-input:focus,
+        :root[data-theme="light"] .auth-card input[type="text"]:focus,
+        :root[data-theme="light"] .auth-card input[type="email"]:focus,
+        :root[data-theme="light"] .auth-card input[type="password"]:focus {
+            background-color: #ffffff !important;
+            border-color: var(--red) !important;
+            box-shadow: 0 0 0 3px rgba(234, 32, 39, 0.18) !important;
+        }
+        :root[data-theme="light"] .auth-card .input-icon {
+            color: rgba(36, 20, 23, 0.45) !important;
+        }
+        :root[data-theme="light"] .auth-card .input-wrap:focus-within .input-icon {
+            color: var(--red) !important;
+        }
     </style>
     @endpush
 
@@ -228,6 +300,23 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 <span>Kembali ke Beranda</span>
             </a>
+            <!-- Theme Toggle Button -->
+            <button type="button" class="auth-theme-btn" onclick="toggleTheme()" title="Ganti mode terang/gelap" aria-label="Ganti mode terang/gelap">
+                <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
         </div>
 
         <div class="auth-card">

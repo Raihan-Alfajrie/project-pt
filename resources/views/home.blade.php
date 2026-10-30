@@ -26,19 +26,17 @@
             background-position: 0 0, center center, center 20%;
             background-repeat: repeat, no-repeat, no-repeat;
         }
-        @media (prefers-color-scheme: light) {
-            :root:not([data-theme="dark"]) .hero-bg {
-                background-image:
-                    radial-gradient(rgba(234,32,39,.18) 1.3px, transparent 1.3px),
-                    linear-gradient(180deg, 
-                        rgba(245, 243, 241, 0.65) 0%, 
-                        rgba(245, 243, 241, 0.78) 35%, 
-                        rgba(245, 243, 241, 0.85) 60%, 
-                        rgba(245, 243, 241, 0.92) 80%, 
-                        rgba(245, 243, 241, 0.98) 92%, 
-                        var(--bg) 100%),
-                    url('{{ asset('background_home.webp') }}');
-            }
+        :root[data-theme="light"] .hero-bg {
+            background-image:
+                radial-gradient(rgba(234,32,39,.18) 1.3px, transparent 1.3px),
+                linear-gradient(180deg, 
+                    rgba(245, 243, 241, 0.65) 0%, 
+                    rgba(245, 243, 241, 0.78) 35%, 
+                    rgba(245, 243, 241, 0.85) 60%, 
+                    rgba(245, 243, 241, 0.92) 80%, 
+                    rgba(245, 243, 241, 0.98) 92%, 
+                    var(--bg) 100%),
+                url('{{ asset('background_home.webp') }}');
         }
         .hero { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 80px 24px 30px; text-align: center; }
         .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--red); background: var(--red-soft); padding: 7px 14px; border-radius: 99px; margin-bottom: 22px; }
@@ -59,10 +57,8 @@
         /* ===== stats strip ===== */
         .stats { position: relative; z-index: 1; max-width: 900px; margin: 36px auto 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border-soft); border: 1px solid var(--border-soft); border-radius: 16px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,.35); }
         .stat { background: rgba(30, 21, 23, 0.88); backdrop-filter: blur(8px); padding: 22px 18px; text-align: center; }
-        @media (prefers-color-scheme: light) {
-            :root:not([data-theme="dark"]) .stat {
-                background: rgba(255, 255, 255, 0.88);
-            }
+        :root[data-theme="light"] .stat {
+            background: rgba(255, 255, 255, 0.88);
         }
         .stat .n { font-size: 26px; font-weight: 800; font-family: 'Space Grotesk', sans-serif; color: var(--red); }
         .stat .l { font-size: 11.5px; color: var(--text-faint); margin-top: 4px; }

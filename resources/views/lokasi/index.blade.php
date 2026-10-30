@@ -538,25 +538,38 @@
             attributionControl: true
         }).setView([-3.45, 104.1], 9);
 
-        // Esri ArcGIS Canvas tile layer with theme detection (No API key required)
-        const isDark = !window.matchMedia || !window.matchMedia('(prefers-color-scheme: light)').matches;
-        const tileBaseUrl = isDark
-            ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-            : 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+        // Dynamic Esri ArcGIS Canvas Tile Layer according to data-theme & theme-changed event
+        function getMapThemeUrls(theme) {
+            const isDark = theme !== 'light';
+            return {
+                base: isDark
+                    ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+                    : 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+                ref: isDark
+                    ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}'
+                    : 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}'
+            };
+        }
 
-        const tileRefUrl = isDark
-            ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}'
-            : 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}';
+        let currentMapTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        let mapUrls = getMapThemeUrls(currentMapTheme);
 
-        L.tileLayer(tileBaseUrl, {
+        let baseTileLayer = L.tileLayer(mapUrls.base, {
             attribution: '&copy; <a href="https://www.esri.com/" target="_blank" rel="noopener">Esri</a> &mdash; Esri, DeLorme, NAVTEQ',
             maxZoom: 16
         }).addTo(map);
 
-        L.tileLayer(tileRefUrl, {
+        let refTileLayer = L.tileLayer(mapUrls.ref, {
             attribution: '',
             maxZoom: 16
         }).addTo(map);
+
+        window.addEventListener('theme-changed', (e) => {
+            const newTheme = e.detail?.theme || document.documentElement.getAttribute('data-theme') || 'dark';
+            const newUrls = getMapThemeUrls(newTheme);
+            baseTileLayer.setUrl(newUrls.base);
+            refTileLayer.setUrl(newUrls.ref);
+        });
 
         const markers = {};
         const rows = document.querySelectorAll('#tableBody tr[data-id]');

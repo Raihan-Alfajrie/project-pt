@@ -9,8 +9,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('pertamina_theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+        function toggleTheme() {
+            var currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            var newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            try {
+                localStorage.setItem('pertamina_theme', newTheme);
+            } catch (e) {}
+            window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: newTheme } }));
+        }
+    </script>
     <style>
-        :root {
+        :root, :root[data-theme="dark"] {
             --red: #ea2027;
             --red-strong: #c8141b;
             --red-soft: rgba(234,32,39,.16);
@@ -31,14 +50,30 @@
             padding-top: env(safe-area-inset-top, 0px);
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
-        @media (prefers-color-scheme: light) {
-            :root:not([data-theme="dark"]) {
-                --bg: #eceae7; --panel: #ffffff; --panel-2: #f7f1f1; --panel-3: #f2e9e9;
-                --text: #241417; --text-dim: #5c4b4d; --text-faint: #8b7a7c; --border: rgba(234,32,39,.22); --border-soft: rgba(0,0,0,.08);
-            }
+        :root[data-theme="light"] {
+            --bg: #eceae7;
+            --panel: #ffffff;
+            --panel-2: #f7f1f1;
+            --panel-3: #f2e9e9;
+            --text: #241417;
+            --text-dim: #5c4b4d;
+            --text-faint: #8b7a7c;
+            --border: rgba(234,32,39,.22);
+            --border-soft: rgba(0,0,0,.08);
         }
-        :root[data-theme="dark"] {
-            --bg: #212326; --panel: #3b2226; --panel-2: #492226; --text: #f6f5f4; --text-dim: rgba(246,245,244,.66); --text-faint: rgba(246,245,244,.4);
+        :root[data-theme="dark"] .theme-icon-moon,
+        :root:not([data-theme="light"]) .theme-icon-moon {
+            display: none !important;
+        }
+        :root[data-theme="dark"] .theme-icon-sun,
+        :root:not([data-theme="light"]) .theme-icon-sun {
+            display: block !important;
+        }
+        :root[data-theme="light"] .theme-icon-sun {
+            display: none !important;
+        }
+        :root[data-theme="light"] .theme-icon-moon {
+            display: block !important;
         }
         * { box-sizing: border-box; }
         html { scroll-padding-top: env(safe-area-inset-top, 0px); }
@@ -250,6 +285,29 @@
                 <span>Dashboard</span>
             </a>
             <div class="tb-divider"></div>
+            <!-- Theme Toggle Button -->
+            <button class="iconbtn theme-toggle-btn"
+                    type="button"
+                    onclick="toggleTheme()"
+                    title="Ganti mode terang/gelap"
+                    aria-label="Ganti mode terang/gelap">
+                <!-- Sun Icon for Light Mode -->
+                <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <!-- Crescent Moon Icon for Dark Mode -->
+                <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
             <div class="notif-wrapper"
                  x-data="notificationDropdown({{ Auth::user() ? rescue(fn() => Auth::user()->unreadNotifications()->count(), 0, false) : 0 }})"
                  x-init="init()"
