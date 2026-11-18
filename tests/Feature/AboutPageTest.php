@@ -68,4 +68,56 @@ class AboutPageTest extends TestCase
         $response->assertSee('Audit Trail Transparan');
         $response->assertSee('Proteksi Formula &amp; Enkripsi', false);
     }
+
+    public function test_about_page_renders_interactive_leaflet_map_and_theme_listeners(): void
+    {
+        $response = $this->get('/about');
+
+        $response->assertStatus(200);
+        $response->assertSee('leafletAboutMap');
+        $response->assertSee('Peta Interaktif Sebaran Wilayah Kerja Zona 4');
+        $response->assertSee('getMapThemeUrls');
+        $response->assertSee('theme-changed');
+        $response->assertSee('L.map');
+    }
+
+    public function test_guest_can_submit_contact_helpdesk_form_and_triggers_admin_notification(): void
+    {
+        $admin = User::factory()->create([
+            'jabatan' => 'administrator',
+        ]);
+
+        $response = $this->from('/about')->post('/kontak-bantuan', [
+            'nama' => 'Ir. Hartono',
+            'email' => 'hartono@mitra.com',
+            'no_hp' => '081298765432',
+            'instansi' => 'PT Mitra Rig Drilling',
+            'kategori' => 'operasional',
+            'perihal' => 'Permohonan Koordinasi Moving Rig ke Lapangan Limau',
+            'pesan' => 'Mohon bantuan konfirmasi jadwal moving rig pemboran menuju lokasi sumur baru.',
+        ]);
+
+        $response->assertRedirect('/about#bantuan');
+        $response->assertSessionHas('success_kontak');
+
+        $this->assertDatabaseHas('kontak_bantuan', [
+            'nama' => 'Ir. Hartono',
+            'email' => 'hartono@mitra.com',
+            'kategori' => 'operasional',
+            'perihal' => 'Permohonan Koordinasi Moving Rig ke Lapangan Limau',
+        ]);
+    }
+
+    public function test_contact_form_validation_rejects_empty_required_fields(): void
+    {
+        $response = $this->from('/about')->post('/kontak-bantuan', [
+            'nama' => '',
+            'email' => 'bukan-email',
+            'kategori' => 'kategori_palsu',
+            'perihal' => '',
+            'pesan' => 'pendek',
+        ]);
+
+        $response->assertSessionHasErrors(['nama', 'email', 'kategori', 'perihal', 'pesan']);
+    }
 }

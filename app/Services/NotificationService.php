@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Alat;
 use App\Models\Jadwal;
+use App\Models\KontakBantuan;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -178,6 +179,26 @@ class NotificationService
             'tipe' => 'info',
             'url' => '/profil',
             'icon' => 'user-check',
+        ]);
+    }
+
+    /**
+     * Pemicu: Pesan bantuan atau pertanyaan baru diajukan oleh pengunjung publik.
+     */
+    public static function notifyKontakBantuanSubmitted(KontakBantuan $pesan): void
+    {
+        $admins = self::getAdmins();
+        $tipe = $pesan->kategori === 'pertanyaan_faq' ? 'info' : 'warning';
+        $kategoriLabel = $pesan->kategori_label;
+        $ringkasan = Str::limit($pesan->pesan, 75);
+
+        self::sendToUsers($admins, [
+            'judul' => "Pesan Baru: {$pesan->nama}",
+            'pesan' => "[{$kategoriLabel}] {$pesan->perihal} — \"{$ringkasan}\"",
+            'modul' => 'kontak_bantuan',
+            'tipe' => $tipe,
+            'url' => '/dashboard',
+            'icon' => 'mail',
         ]);
     }
 }

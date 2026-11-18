@@ -216,4 +216,46 @@ Tidak ada yang perlu dikerjakan ulang dari bagian ini **kecuali** diputuskan use
 
 **DoD:** Halaman About tampil profesional, informatif, responsif multi-breakpoint (dark & light mode), seluruh test lulus.
 
+---
+
+## Bagian E: Pengembangan Halaman Pengunjung (Visitor / Public Pages) — Fase P1 s/d P6 *(SELESAI)*
+
+### Fase P1 — Skema Database & Model Baru (`kontak_bantuan` + Integrasi Notifikasi Admin) *(SELESAI)*
+- [x] Migrasi tabel baru `kontak_bantuan` (`2026_11_18_000001_create_kontak_bantuan_table.php`).
+- [x] Model `App\Models\KontakBantuan` dengan accessors label, status label, dan local scopes (`baru`, `kategori`, `search`).
+- [x] Integrasi method trigger `NotificationService::notifyKontakBantuanSubmitted()` ke lonceng Admin.
+- [x] Feature test `tests/Feature/KontakBantuanTest.php` (5 test lulus).
+
+### Fase P2 — Navbar Publik Baru (Urutan Menu + Mobile Hamburger Drawer) & Footer Korporat *(SELESAI)*
+- [x] Navbar urutan menu: Home · About · FAQ · [Toggle Tema ☀️/🌙] · [Masuk / Daftar].
+- [x] Tombol hamburger dan slide-over mobile drawer responsif pada layar ponsel (< 900px) berbasis Alpine.js.
+- [x] Enhanced Corporate Footer 4 kolom resmi Pertamina Hulu Rokan Zona 4 dengan jam operasional WIB dan disclaimer kerahasiaan korporat.
+- [x] Feature test `tests/Feature/GuestNavigationAndFooterTest.php` (5 test lulus).
+
+### Fase P3 — Halaman FAQ Publik (`/faq`) Dinamis + Fitur Ajukan Pertanyaan *(SELESAI)*
+- [x] Pembukaan akses publik untuk route `/faq` tanpa login menggunakan layout tamu (`faq-public.blade.php`).
+- [x] Live search instan dan filter kategori tab dinamis dari database.
+- [x] Fitur & modal publik "Ajukan Pertanyaan Baru" yang tersimpan ke tabel `kontak_bantuan` (`POST /faq/tanya`) dan memicu notifikasi admin.
+- [x] Banner penunjuk FAQ di halaman About (`/about`).
+- [x] Pembaruan test suite `tests/Feature/FaqTest.php` (9 test lulus).
+
+### Fase P4 — Halaman About: Peta Interaktif Leaflet Lapangan & Form Kontak Bantuan *(SELESAI)*
+- [x] Peta interaktif Leaflet `#leafletAboutMap` dengan 7 pin koordinat lapangan WK Zona 4 dan popup rincian peran operasional.
+- [x] Sinkronisasi otomatis kanvas tema peta gelap/terang saat toggle tema matahari/bulan sabit diubah.
+- [x] Seksi dan formulir Hubungi Kami / Permohonan Bantuan Operasional (`POST /kontak-bantuan`) dengan `KontakBantuanController`.
+- [x] Penambahan test suite `tests/Feature/AboutPageTest.php` (8 test lulus).
+
+### Fase P5 — Halaman Home: Live Dynamic Stats, Fleet Status Ticker, dan Tabel Jadwal Gantt Penuh *(SELESAI)*
+- [x] Controller `App\Http\Controllers\HomeController` untuk data dinamis beranda publik.
+- [x] Live Dynamic Stats Strip: angka riil Rig, Lapangan, Jadwal Aktif, dan Total Alat dari database.
+- [x] Public Fleet Status Ticker: status kesiapan armada rig (Aktif, Standby, Perbaikan, Kendala, Total).
+- [x] Tabel Jadwal & Progres Penuh (Gantt Chart Timeline 19 bulan: Jun 2026 – Des 2027) di halaman Home dengan live search nama rig/sumur, filter status, sticky column, dan interactive tooltips.
+- [x] Feature test `tests/Feature/HomePageTest.php` (3 test lulus).
+
+### Fase P6 — Verifikasi Akhir, Kompilasi Aset, dan Pembaruan Catatan Dokumen *(SELESAI)*
+- [x] Kompilasi aset produksi via Vite (`npm run build`).
+- [x] Pengujian end-to-end menyeluruh `php artisan test`: 176 test lulus 100% (993 assertions, 0 errors).
+- [x] Pembaruan dokumentasi `TASK.md` dan `README.md`.
+
+
 
