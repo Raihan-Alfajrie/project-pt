@@ -5,8 +5,10 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DokumentasiController;
 use App\Http\Controllers\FaqController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ImportExportController;
 use App\Http\Controllers\JadwalController;
+use App\Http\Controllers\KontakBantuanController;
 use App\Http\Controllers\LokasiController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -14,13 +16,15 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
-Route::get('/', function () {
-    return view('home');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/about', function () {
     return view('about');
 })->name('about');
+
+Route::get('/faq', [FaqController::class, 'index'])->name('faq');
+Route::post('/faq/tanya', [FaqController::class, 'submitQuestion'])->name('faq.tanya');
+Route::post('/kontak-bantuan', [KontakBantuanController::class, 'store'])->name('kontak.store');
 
 // Authenticated internal routes
 Route::middleware(['auth'])->group(function () {
@@ -70,8 +74,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/dokumentasi/panels/{panel}/items', [DokumentasiController::class, 'storeItem'])->name('dokumentasi.items.store');
     Route::put('/dokumentasi/items/{item}', [DokumentasiController::class, 'updateItem'])->name('dokumentasi.items.update');
     Route::delete('/dokumentasi/items/{item}', [DokumentasiController::class, 'destroyItem'])->name('dokumentasi.items.destroy');
-    // Modul FAQ (Dinamis & Interaktif)
-    Route::get('/faq', [FaqController::class, 'index'])->name('faq');
+    // Modul FAQ (Dinamis & Interaktif) - Khusus Kelola Administrator
     Route::post('/faq', [FaqController::class, 'store'])->name('faq.store');
     Route::put('/faq/{faq}', [FaqController::class, 'update'])->name('faq.update');
     Route::delete('/faq/{faq}', [FaqController::class, 'destroy'])->name('faq.destroy');

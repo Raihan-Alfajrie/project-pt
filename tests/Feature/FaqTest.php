@@ -18,11 +18,34 @@ class FaqTest extends TestCase
         $this->seed();
     }
 
-    public function test_guest_is_redirected_to_login_from_faq(): void
+    public function test_guest_can_view_public_faq_page_and_seeded_items(): void
     {
         $response = $this->get('/faq');
 
-        $response->assertRedirect('/login');
+        $response->assertOk();
+        $response->assertSee('Pertanyaan yang Sering Diajukan');
+        $response->assertSee('Pusat Bantuan &amp; FAQ Publik', false);
+        $response->assertSee('Ajukan Pertanyaan');
+    }
+
+    public function test_guest_can_submit_faq_question_and_triggers_admin_notification(): void
+    {
+        $response = $this->post('/faq/tanya', [
+            'nama' => 'Pengunjung Tamu',
+            'email' => 'tamu@pertamina.com',
+            'instansi' => 'Mitra Rig Services',
+            'kategori' => 'alat_rig',
+            'pertanyaan' => 'Berapa kapasitas horse power maksimum rig di Limau?',
+        ]);
+
+        $response->assertRedirect('/faq?view=public');
+        $response->assertSessionHas('success_pertanyaan');
+
+        $this->assertDatabaseHas('kontak_bantuan', [
+            'nama' => 'Pengunjung Tamu',
+            'email' => 'tamu@pertamina.com',
+            'kategori' => 'pertanyaan_faq',
+        ]);
     }
 
     public function test_pekerja_can_view_faq_page_and_seeded_items(): void

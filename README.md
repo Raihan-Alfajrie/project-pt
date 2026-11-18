@@ -1,6 +1,6 @@
 # Pertamina Admin Panel — Rig Monitoring WK Zona 4
 
-Platform pemantauan rig pemboran dan kerja ulang (workover) internal untuk wilayah kerja Pertamina Hulu Rokan (PHR) Zona 4. Sistem ini memantau status alat/rig, lokasi lapangan kerja, jadwal operasional sumur, manajemen hak akses pengguna, log audit, dokumentasi legenda warna, modul **Import & Export Data Excel/CSV**, serta **Sistem Notifikasi Real-time & Dropdown Navbar**.
+Platform pemantauan rig pemboran dan kerja ulang (workover) internal untuk wilayah kerja Pertamina Hulu Rokan (PHR) Zona 4. Sistem ini memantau status alat/rig, lokasi lapangan kerja, jadwal operasional sumur, manajemen hak akses pengguna, log audit, dokumentasi legenda warna, modul **Import & Export Data Excel/CSV**, **Sistem Notifikasi Real-time & Dropdown Navbar**, **Dukungan Mode Terang & Gelap (Light/Dark Theme)**, serta **Portal Publik Terpadu (Live Stats, Fleet Status Ticker, Full Gantt Timeline, Peta Interaktif Leaflet, FAQ Mandiri, dan Helpdesk Bantuan)**.
 
 ---
 
@@ -260,7 +260,7 @@ Seluruh modul, live audit logging, upload file, FAQ dinamis, RBAC, fitur Import/
 php artisan test
 ```
 
-Hasil pengujian terkini: **151 tests passed (813 assertions, 100% passing)**.
+Hasil pengujian terkini: **176 tests passed (993 assertions, 100% passing)**.
 
 ### Rincian Test Suite:
 - **Modul Tahap 1 Baseline**: 82 tests (382 assertions)
@@ -276,6 +276,11 @@ Hasil pengujian terkini: **151 tests passed (813 assertions, 100% passing)**.
   - `NotificationApiTest` (10 tests): Otentikasi, isolasi per user, filter unread, unread-count endpoint, mark as read, mark all as read, dan delete.
   - `NotificationUiTest` (5 tests): Render navbar bell button, badge counter unread, popover dropdown, render halaman penuh `/notifikasi`, dan filter.
   - `NotificationTriggerTest` (7 tests): Event trigger saat penambahan/perubahan status Alat, Jadwal, Import massal, dan mutasi permissions user.
-- **Modul Halaman About (Pengembangan Lanjutan)**: 5 tests baru (29 assertions baru)
-  - `AboutPageTest` (5 tests): Aksesibilitas publik/tamu, navigasi shortcut user terotentikasi, perenderan 7 lapangan WK Zona 4, 6 pilar kapabilitas sistem, dan standar keamanan tata kelola.
+- **Modul Halaman Pengunjung & Fitur Publik (Fase P1 - P6)**: 30 tests (209 assertions)
+  - `ThemeToggleTest` (5 tests): Pengujian pergantian mode terang/gelap pada navbar tamu, halaman auth (login/register), navbar internal dashboard, dan listener sinkronisasi peta GIS.
+  - `KontakBantuanTest` (5 tests): Skema tabel `kontak_bantuan`, model, accessor label, local scopes, dan pemicu notifikasi otomatis ke Administrator.
+  - `GuestNavigationAndFooterTest` (5 tests): Navbar urutan (Home · About · FAQ), mobile drawer hamburger menu Alpine.js, dan Enhanced Corporate Footer 4 kolom Pertamina Hulu Rokan Zona 4.
+  - `FaqTest` (9 tests): Akses publik halaman `/faq` tanpa login, live search instan, filter kategori, pengajuan pertanyaan baru oleh pengunjung, dan kontrol manajemen Admin di dashboard.
+  - `AboutPageTest` (8 tests): Peta Leaflet mini interaktif dengan 7 koordinat lapangan WK Zona 4, sinkronisasi canvas peta terang/gelap, dan formulir helpdesk permohonan bantuan.
+  - `HomePageTest` (3 tests): Live Dynamic Stats Strip (angka riil database), Public Fleet Status Ticker, dan Tabel Jadwal Gantt Timeline penuh 19 bulan (Jun 2026 – Des 2027) dengan fitur pencarian dan filter status.
 

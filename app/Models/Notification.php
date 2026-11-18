@@ -51,6 +51,7 @@ class Notification extends DatabaseNotification
             'lokasi' => 'Lokasi Lapangan',
             'import_export' => 'Import / Export',
             'user' => 'Pengguna & Akun',
+            'kontak_bantuan' => 'Bantuan & FAQ',
             default => 'Sistem',
         };
     }
@@ -82,6 +83,7 @@ class Notification extends DatabaseNotification
             'lokasi' => 'map-pin',
             'import_export' => 'file-spreadsheet',
             'user' => 'user-check',
+            'kontak_bantuan' => 'mail',
             default => 'bell',
         });
     }
